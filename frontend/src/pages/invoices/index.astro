@@ -21,6 +21,13 @@ import Layout from '../../layouts/Layout.astro';
 
       <div class="flex items-center gap-2">
         <button 
+          id="btn-open-generate-inv-modal" 
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
+        >
+          <svg class="w-3.5 h-3.5 text-[#714B67]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          <span>Generate Invoice</span>
+        </button>
+        <button 
           id="btn-trigger-batch-billing-page" 
           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#714B67] hover:bg-[#5a3c53] text-white text-xs font-semibold transition-colors shadow-xs"
         >
@@ -228,7 +235,7 @@ import Layout from '../../layouts/Layout.astro';
             <td class="text-right">
               <div class="inline-flex items-center gap-1.5">
                 <a 
-                  href="${API_URL}/api/v1/billing/invoices/${inv.id}/pdf" 
+                  href="${API_URL}/api/v1/billing/invoices/${inv.id}/pdf?token=" + encodeURIComponent(localStorage.getItem("brightloop_token") || "") 
                   target="_blank" 
                   class="px-2 py-0.5 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium text-[11px] shadow-2xs" 
                   title="Download Official ReportLab PDF"
@@ -343,5 +350,82 @@ import Layout from '../../layouts/Layout.astro';
     });
 
     fetchInvoices();
-  </script>
+  
+    // Generate Invoice Modal Logic
+    const genModal = document.getElementById('modal-generate-invoice');
+    const genSubSelect = document.getElementById('gen-inv-sub-select') as HTMLSelectElement;
+
+    document.getElementById('btn-open-generate-inv-modal')?.addEventListener('click', async () => {
+      genModal?.classList.remove('hidden');
+      if (genSubSelect) {
+        genSubSelect.innerHTML = '<option value="">Loading active subscriptions...</option>';
+        const res = await apiFetch<any>('/api/v1/subscriptions?status_filter=ACTIVE');
+        if (res.data?.items && res.data.items.length > 0) {
+          genSubSelect.innerHTML = res.data.items.map((s: any) => `
+            <option value="${s.id}">
+              ${s.subscription_number} — ${s.customer_name || 'Customer #' + s.customer_id} (${formatUSD(s.total_recurring)}/mo)
+            </option>
+          `).join('');
+        } else {
+          genSubSelect.innerHTML = '<option value="">No active subscriptions found</option>';
+        }
+      }
+    });
+
+    document.getElementById('btn-close-gen-inv-modal')?.addEventListener('click', () => genModal?.classList.add('hidden'));
+    document.getElementById('btn-cancel-gen-inv')?.addEventListener('click', () => genModal?.classList.add('hidden'));
+
+    document.getElementById('btn-submit-gen-inv')?.addEventListener('click', async () => {
+      const subId = Number(genSubSelect?.value);
+      if (!subId) {
+        alert('Please select an active subscription');
+        return;
+      }
+
+      const res = await apiFetch<any>(`/api/v1/subscriptions/${subId}/generate-invoice`, {
+        method: 'POST',
+      });
+
+      if (res.data) {
+        genModal?.classList.add('hidden');
+        alert(`✅ Invoice generated: ${res.data.invoice_number} ($${Number(res.data.total_amount).toFixed(2)})`);
+        fetchInvoices();
+      } else {
+        alert(res.error || 'Failed to generate invoice');
+      }
+    });
+</script>
+
+  <!-- Generate Invoice Modal -->
+  <div id="modal-generate-invoice" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 rounded-md p-5 max-w-md w-full shadow-lg space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+        <div>
+          <h3 class="font-bold text-slate-900 text-sm">Generate Subscription Invoice</h3>
+          <p class="text-xs text-slate-500">Create an on-demand billing cycle invoice</p>
+        </div>
+        <button id="btn-close-gen-inv-modal" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Target Active Subscription</label>
+          <select id="gen-inv-sub-select" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#714B67]">
+            <option value="">Loading subscriptions...</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <button id="btn-cancel-gen-inv" class="px-3 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium cursor-pointer">
+          Cancel
+        </button>
+        <button id="btn-submit-gen-inv" class="px-3.5 py-1 rounded bg-[#714B67] hover:bg-[#5a3c53] text-white text-xs font-semibold shadow-xs cursor-pointer">
+          Generate & Post Invoice
+        </button>
+      </div>
+    </div>
+  </div>
 </Layout>

@@ -79,6 +79,11 @@ Before installing, ensure your machine has the following tools installed:
 | **Git** | Any modern version | Latest | Version control and repository cloning |
 | **Docker** *(Optional)* | 24.0+ | Latest Desktop | Containerized multi-service deployment |
 
+> [!IMPORTANT]
+> **Working Directory Notice**:
+> - **Backend Commands**: You **must** change into the `backend/` directory (`cd backend`) before running any Python, pip, uvicorn, seed, or test commands.
+> - **Frontend Commands**: You **must** change into the `frontend/` directory (`cd frontend`) before running any npm or astro commands.
+
 ### Verify Your Installations:
 Open your terminal (PowerShell, Command Prompt, or Bash) and run:
 ```bash
@@ -187,19 +192,30 @@ docker-compose down -v
 
 ## ▶️ How to Run the Application
 
+> [!CAUTION]
+> Always navigate to the target module directory first:
+> - Backend commands **fail** if run from the repository root; you must run `cd backend` first.
+> - Frontend commands **fail** if run from the repository root; you must run `cd frontend` first.
+
 ### Running Locally (Two Terminals)
 
 #### Terminal 1 — Start Backend Server (FastAPI):
 ```bash
+# 1. Navigate to the backend directory
 cd backend
-# If you used a virtual environment, activate it first (e.g. .\venv\Scripts\Activate.ps1)
+
+# 2. (Optional) Activate virtual environment if configured (e.g. .\venv\Scripts\Activate.ps1)
+# 3. Launch Uvicorn server
 uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 *Backend is now live at `http://127.0.0.1:8000` with automated background billing cron active.*
 
 #### Terminal 2 — Start Frontend Server (Astro):
 ```bash
+# 1. Navigate to the frontend directory
 cd frontend
+
+# 2. Launch Astro dev server
 npm run dev
 ```
 *Frontend is now live at `http://localhost:4321`.*
@@ -218,15 +234,15 @@ npm run dev
 
 ---
 
-## 👥 Pre-Seeded Demo Personas (1-Click Switcher)
+## 👥 Pre-Seeded Demo Accounts & Credentials
 
-The application includes pre-configured demo users across all three permission tiers. In the top-right header of the ERP UI, a **1-Click Persona Switcher** dropdown allows instant role toggling without manually typing credentials:
+Sign in at [http://localhost:4321/login](http://localhost:4321/login) using any of the seeded credentials. Once signed in, the header displays the authenticated user's name, avatar initials, and role badge (with a dedicated **Sign Out** button):
 
 | Persona | Role | Email | Password | Access & Permissions |
 |---|---|---|---|---|
-| **Alex Morgan** | Administrator | `admin@brightloop.io` | `BrightloopAdmin2026!` | Full administrative access across all ERP modules |
-| **Sarah Chen** | Finance Lead | `finance@brightloop.io` | `BrightloopFinance2026!` | Billing runs, payment reconciliation, aging reports |
-| **Acmez Enterprise** | Customer Tenant | `customer@brightloop.io` | `BrightloopCustomer2026!` | Self-service portal, view contracts, card payments |
+| **Alex Morgan** | Administrator | `admin@brightloop.io` | `BrightloopAdmin2026!` | Full administrative access, staff provisioning, password reset & account deletion |
+| **Sarah Chen** | Finance Lead | `finance@brightloop.io` | `BrightloopFinance2026!` | Billing runs, invoice management, payment reconciliation, aging reports |
+| **Acmez Enterprise** | Customer Tenant | `customer@brightloop.io` | `BrightloopCustomer2026!` | Isolated customer portal, view contracts, card payments |
 
 ---
 
@@ -448,13 +464,17 @@ All endpoints are versioned under `/api/v1/` (with automatic backward-compatible
 
 ### Authentication & Users
 - `POST /api/v1/auth/login` — Authenticate and receive JWT access token.
-- `POST /api/v1/auth/register` — Create new user account.
+- `POST /api/v1/auth/register` — Create new customer user account.
 - `GET /api/v1/auth/me` — Retrieve active profile and role.
-- `GET /api/v1/auth/users` — List customer accounts for quotation builder.
+- `GET /api/v1/auth/users` — List directory of all users (Admin only).
+- `POST /api/v1/auth/staff` — Provision new internal staff account (Admin only).
+- `DELETE /api/v1/auth/users/{user_id}` — Permanently delete user account with safety cascading (Admin only).
+- `PUT /api/v1/auth/users/{user_id}/password` — Change/reset user password with complexity validation (Admin only).
 
 ### Catalog & Pricing
 - `GET /api/v1/catalog/products` — List products with variant matrices and price extras.
 - `POST /api/v1/catalog/products` — Create new catalog item.
+- `POST /api/v1/catalog/products/{product_id}/variants` — Add attribute price extra surcharge variant (e.g. +$560.00).
 - `GET /api/v1/catalog/plans` — List billing plans (Monthly Flex, Annual Commitment, Daily Dev).
 - `GET /api/v1/catalog/discounts` — List volume tiers and promotional coupons.
 - `GET /api/v1/catalog/taxes` — List active tax jurisdictions (18% GST / IGST).
@@ -466,6 +486,7 @@ All endpoints are versioned under `/api/v1/` (with automatic backward-compatible
 - `GET /api/v1/subscriptions/{id}` — Retrieve full subscription form data.
 - `POST /api/v1/subscriptions/{id}/transition` — Advance state machine (`quotation`, `confirmed`, `active`, `paused`, `cancelled`, `closed`).
 - `POST /api/v1/subscriptions/{id}/prorate` — Mid-cycle seat upgrade with immediate pro-rata invoice.
+- `POST /api/v1/subscriptions/{id}/generate-invoice` — On-demand itemized invoice generation for active contracts.
 - `GET /api/v1/subscriptions/{id}/audit` — Retrieve audit trail.
 - `POST /api/v1/subscriptions/{id}/chatter` — Post a discussion note to contract chatter.
 
@@ -473,8 +494,8 @@ All endpoints are versioned under `/api/v1/` (with automatic backward-compatible
 - `GET /api/v1/billing/invoices` — List invoices with balance due and status filters.
 - `GET /api/v1/billing/invoices/{id}` — Invoice detail view.
 - `POST /api/v1/billing/batch-run` — Trigger idempotent batch billing run.
-- `POST /api/v1/billing/subscriptions/{id}/invoice` — Generate on-demand invoice for subscription.
-- `GET /api/v1/billing/invoices/{id}/pdf` — Download ReportLab vector PDF invoice.
+- `POST /api/v1/billing/run-billing` — Alias for batch billing run.
+- `GET /api/v1/billing/invoices/{id}/pdf` — Download ReportLab vector PDF invoice (supports `?token=` parameter).
 
 ### Payments & Reconciliation
 - `GET /api/v1/payments` — Payment ledger and transaction history.

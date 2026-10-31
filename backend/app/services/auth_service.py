@@ -85,18 +85,19 @@ async def get_current_user(
     """
     token = None
 
-    # Try cookie first (Astro frontend)
-    cookie_token = request.cookies.get("access_token")
-    if cookie_token:
-        token = cookie_token
+    # 1. Explicit Authorization Bearer header takes precedence (API clients & tests)
+    if credentials:
+        token = credentials.credentials
 
-    # Check query param (for browser EventSource SSE streams)
+    # 2. Ambient HTTP-only cookie (Astro frontend browser requests)
+    if not token:
+        cookie_token = request.cookies.get("access_token")
+        if cookie_token:
+            token = cookie_token
+
+    # 3. Query param token (for browser EventSource SSE streams & direct PDF links)
     if not token:
         token = request.query_params.get("token")
-
-    # Fall back to Bearer header (API clients)
-    if not token and credentials:
-        token = credentials.credentials
 
     if not token:
         raise HTTPException(

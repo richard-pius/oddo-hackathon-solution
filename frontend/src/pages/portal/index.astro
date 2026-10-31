@@ -218,7 +218,7 @@ import Layout from '../../layouts/Layout.astro';
               <td class="text-right">
                 <div class="inline-flex items-center gap-1.5">
                   <a 
-                    href="${API_URL}/api/v1/billing/invoices/${i.id}/pdf" 
+                    href="${API_URL}/api/v1/billing/invoices/${i.id}/pdf?token=" + encodeURIComponent(localStorage.getItem("brightloop_token") || "") 
                     target="_blank" 
                     class="px-2 py-0.5 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium text-[11px] shadow-2xs"
                   >

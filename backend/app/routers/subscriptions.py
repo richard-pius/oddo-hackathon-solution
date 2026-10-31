@@ -368,6 +368,7 @@ async def prorate_subscription_upgrade(
     """
     from decimal import Decimal
     from datetime import date, timedelta
+    import uuid
     from app.models import Subscription, SubscriptionLine, SubscriptionAudit, Invoice, InvoiceLine, InvoiceStatus
     from app.services.billing_engine import generate_invoice_number
     from app.services.continuous_stream import event_broadcaster
@@ -438,7 +439,7 @@ async def prorate_subscription_upgrade(
         amount_paid=Decimal("0.00"),
         amount_due=prorated_amount,
         status=InvoiceStatus.CONFIRMED,
-        idempotency_key=f"PRORATE-{sub.id}-{line.id}-{today.isoformat()}",
+        idempotency_key=f"PRORATE-{sub.id}-{line.id}-{today.isoformat()}-{uuid.uuid4().hex[:8]}",
     )
     db.add(invoice)
     await db.flush()
@@ -487,5 +488,86 @@ async def prorate_subscription_upgrade(
         "prorated_amount": float(prorated_amount),
         "invoice_id": invoice.id,
         "invoice_number": inv_num,
+    }
+
+
+@router.post("/{subscription_id}/generate-invoice")
+async def manual_generate_invoice(
+    subscription_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_staff_or_admin),
+):
+    """
+    Staff/Admin on-demand invoice generator for an active subscription.
+    Produces an itemized invoice immediately.
+    """
+    from app.services.billing_engine import generate_invoice_for_subscription, generate_invoice_number
+    from app.models import Invoice, InvoiceLine, InvoiceStatus
+    from datetime import date, timedelta
+    import uuid
+
+    result = await db.execute(
+        select(Subscription)
+        .options(selectinload(Subscription.lines), selectinload(Subscription.plan), selectinload(Subscription.customer))
+        .where(Subscription.id == subscription_id)
+    )
+    sub = result.scalar_one_or_none()
+    if not sub:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+
+    if sub.status not in (SubscriptionStatus.ACTIVE, SubscriptionStatus.CONFIRMED):
+        raise HTTPException(status_code=400, detail=f"Cannot generate invoice for subscription in {sub.status.value} status")
+
+    invoice = await generate_invoice_for_subscription(sub, sub.lines, db)
+
+    if invoice is None:
+        today = date.today()
+        inv_num = await generate_invoice_number(db)
+        subtotal = sum(Decimal(str(line.unit_price)) * line.quantity for line in sub.lines)
+        
+        invoice = Invoice(
+            invoice_number=inv_num,
+            subscription_id=sub.id,
+            customer_id=sub.customer_id,
+            issue_date=today,
+            due_date=today + timedelta(days=30),
+            billing_period_start=today,
+            billing_period_end=today + timedelta(days=30),
+            subtotal=subtotal,
+            discount_total=Decimal("0.00"),
+            tax_total=Decimal("0.00"),
+            total_amount=subtotal,
+            amount_paid=Decimal("0.00"),
+            amount_due=subtotal,
+            status=InvoiceStatus.CONFIRMED,
+            idempotency_key=f"MANUAL-{sub.id}-{today.isoformat()}-{uuid.uuid4().hex[:8]}",
+        )
+        db.add(invoice)
+        await db.flush()
+
+        for line in sub.lines:
+            line_total = Decimal(str(line.unit_price)) * line.quantity
+            inv_line = InvoiceLine(
+                invoice_id=invoice.id,
+                product_id=line.product_id,
+                variant_id=line.variant_id,
+                description=f"Manual invoice: {line.description}",
+                quantity=line.quantity,
+                unit_price=line.unit_price,
+                subtotal=line_total,
+                tax_amount=Decimal("0.00"),
+                total_amount=line_total,
+            )
+            db.add(inv_line)
+
+    await db.commit()
+    await db.refresh(invoice)
+
+    return {
+        "detail": "Invoice generated successfully",
+        "invoice_id": invoice.id,
+        "invoice_number": invoice.invoice_number,
+        "total_amount": float(invoice.total_amount),
+        "status": invoice.status.value,
     }
 
