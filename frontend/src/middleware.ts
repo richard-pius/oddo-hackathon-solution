@@ -8,6 +8,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const { pathname } = context.url;
 
+  // Handle /dashboard alias route
+  if (pathname === '/dashboard' || pathname === '/dashboard/') {
+    const token = context.cookies.get('access_token')?.value;
+    if (!token) {
+      return context.redirect('/login?redirect=/dashboard');
+    }
+    return context.redirect('/');
+  }
+
   // Public routes: login, register, and static assets
   const isPublic =
     pathname === '/login' ||
@@ -24,9 +33,20 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return next();
   }
 
-  // Enforce server-side route guards during runtime server/dev request execution
+  // Explicitly check and intercept protected routes (/portal, /dashboard, /admin, etc.)
+  const isProtected =
+    pathname === '/' ||
+    pathname.startsWith('/portal') ||
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/subscriptions') ||
+    pathname.startsWith('/invoices') ||
+    pathname.startsWith('/payments') ||
+    pathname.startsWith('/catalog') ||
+    pathname.startsWith('/rules');
+
   const token = context.cookies.get('access_token')?.value;
-  if (!token) {
+  if (!token && isProtected) {
     return context.redirect(`/login?redirect=${encodeURIComponent(pathname)}`);
   }
 

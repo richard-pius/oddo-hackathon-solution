@@ -6,10 +6,10 @@
     "node": ">=22.23.4"
   },
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+    "dev": "node ./node_modules/astro/bin/astro.mjs dev",
+    "build": "node ./node_modules/astro/bin/astro.mjs build",
+    "preview": "node ./node_modules/astro/bin/astro.mjs preview",
+    "astro": "node ./node_modules/astro/bin/astro.mjs"
   },
   "dependencies": {
     "astro": "^7.4.4"

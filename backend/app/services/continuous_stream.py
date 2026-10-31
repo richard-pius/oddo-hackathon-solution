@@ -3,7 +3,8 @@ Continuous Stream — SSE Broadcaster & Event Bus
 ================================================
 Provides real-time push notifications to the frontend dashboard via
 Server-Sent Events (SSE). When a payment arrives, a subscription renews,
-or a billing batch completes, the event is broadcast to all connected clients.
+or a billing batch completes, the event is broadcast to all connected clients
+and continuously archived into the DataStax Astra DB telemetry repository.
 
 Why SSE instead of WebSockets:
   SSE is HTTP/1.1-native, auto-reconnects, works through corporate proxies
@@ -16,6 +17,7 @@ Architecture:
   EventBroadcaster maintains an asyncio.Queue per connected client.
   When broadcast() is called, each queue gets a copy of the event.
   Disconnected clients are cleaned up lazily when their queue raises.
+  Every event is asynchronously recorded into Astra DB for telemetry audit.
 """
 
 import asyncio
@@ -23,6 +25,8 @@ import json
 import logging
 from datetime import datetime, timezone
 from typing import AsyncGenerator
+
+from app.services.astra_telemetry import astra_telemetry
 
 logger = logging.getLogger("brightloop.stream")
 
@@ -61,7 +65,7 @@ class EventBroadcaster:
 
     async def broadcast(self, event: dict):
         """
-        Push an event to all connected clients.
+        Push an event to all connected clients and archive to Astra DB telemetry.
         Why we don't await each put:
         If a slow client's queue is full (256 items), we drop the event for
         that client rather than blocking all other clients. The dashboard will
@@ -80,6 +84,17 @@ class EventBroadcaster:
         # Clean up clients whose queues overflowed — they're probably dead tabs
         for dq in dead_clients:
             await self.unsubscribe(dq)
+
+        # Continuously ingest telemetry event into DataStax Astra DB repository adapter
+        try:
+            event_type = str(event.get("type", "stream_event"))
+            await astra_telemetry.record_event(
+                event_type=event_type,
+                data=event,
+                metadata={"source": "continuous_stream_broadcaster"},
+            )
+        except Exception as e:
+            logger.debug("Non-blocking Astra DB logging notice: %s", e)
 
     async def event_generator(self, queue: asyncio.Queue) -> AsyncGenerator[str, None]:
         """
