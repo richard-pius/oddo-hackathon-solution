@@ -2,87 +2,77 @@
 import Layout from '../../layouts/Layout.astro';
 ---
 
-<Layout title="New Subscription Quotation — Brightloop ERP" activeNav="subscriptions">
-  <div class="max-w-5xl mx-auto space-y-6">
-    <!-- Header & Breadcrumbs -->
-    <div class="border-b border-slate-800/80 pb-5">
-      <nav class="flex items-center gap-2 text-xs text-slate-400 mb-2">
-        <a href="/" class="hover:text-white">Dashboard</a>
-        <span>/</span>
-        <a href="/subscriptions" class="hover:text-white">Subscriptions</a>
-        <span>/</span>
-        <span class="text-indigo-400 font-semibold">New Quotation</span>
-      </nav>
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl font-extrabold text-white tracking-tight">Create Subscription Quotation</h1>
-          <p class="text-xs text-slate-400 mt-1">Configure products, variant price modifiers (+560 Odoo brand), multi-tier discounts, and billing intervals.</p>
-        </div>
-      </div>
+<Layout title="New Subscription Quotation — Brightloop ERP" activeNav="subscriptions" breadcrumbs={[{ label: 'Brightloop ERP', href: '/' }, { label: 'Subscriptions', href: '/subscriptions' }, { label: 'New Quotation' }]}>
+  <div class="max-w-5xl mx-auto space-y-4">
+    
+    <!-- Header -->
+    <div class="border-b border-slate-200 pb-3">
+      <h1 class="text-xl font-bold text-slate-900 tracking-tight">Create Subscription Quotation</h1>
+      <p class="text-xs text-slate-500 mt-0.5">Configure products, variant price modifiers (+560 Odoo brand), multi-tier discounts, and billing intervals.</p>
     </div>
 
     <!-- Quick Template Auto-Fill Banner -->
-    <div class="bg-gradient-to-r from-indigo-950/60 to-slate-900 border border-indigo-900/40 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-indigo-400">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+    <div class="bg-white border border-slate-200 rounded-md p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded bg-slate-100 border border-slate-200 flex items-center justify-center text-[#714B67]">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
         </div>
         <div>
-          <div class="font-bold text-xs text-white">Quotation Template Quick-Fill</div>
-          <div class="text-[11px] text-slate-400">Apply a predefined enterprise bundle with automated rules.</div>
+          <div class="font-bold text-xs text-slate-900">Quotation Template Quick-Fill</div>
+          <div class="text-[11px] text-slate-500">Apply a predefined enterprise bundle with automated rules.</div>
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <select id="template-select" class="bg-slate-900 border border-slate-700 text-xs text-slate-200 rounded-xl px-3 py-1.5 focus:outline-none focus:border-indigo-500">
+        <select id="template-select" class="bg-white border border-slate-300 text-xs text-slate-900 rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#714B67]">
           <option value="">-- Select Template --</option>
         </select>
-        <button id="btn-apply-template" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-md shadow-indigo-600/30">
+        <button id="btn-apply-template" class="px-3 py-1.5 rounded bg-[#714B67] hover:bg-[#5a3c53] text-white font-semibold text-xs shadow-2xs">
           Apply
         </button>
       </div>
     </div>
 
-    <!-- Contract Master Form -->
-    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+    <!-- Contract Master Form Sheet -->
+    <div class="bg-white border border-slate-200 rounded-md p-5 shadow-xs space-y-5">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <!-- Customer Selection -->
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-            Customer Account <span class="text-rose-400">*</span>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
+            Customer Account <span class="text-rose-500">*</span>
           </label>
-          <select id="field-customer" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+          <select id="field-customer" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#714B67]">
             <option value="">Loading customer accounts...</option>
           </select>
         </div>
 
         <!-- Plan Selection -->
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-            Subscription Plan <span class="text-rose-400">*</span>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
+            Subscription Plan <span class="text-rose-500">*</span>
           </label>
-          <select id="field-plan" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+          <select id="field-plan" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#714B67]">
             <option value="">Loading plans...</option>
           </select>
         </div>
 
         <!-- Start Date -->
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-            Contract Start Date <span class="text-rose-400">*</span>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
+            Contract Start Date <span class="text-rose-500">*</span>
           </label>
           <input 
             type="date" 
             id="field-start-date" 
-            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+            class="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#714B67]"
           />
         </div>
 
         <!-- Payment Terms -->
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
             Payment Terms
           </label>
-          <select id="field-payment-terms" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+          <select id="field-payment-terms" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#714B67]">
             <option value="Immediate Payment">Immediate Payment</option>
             <option value="Net 15">Net 15 Days</option>
             <option value="Net 30" selected>Net 30 Days</option>
@@ -92,58 +82,58 @@ import Layout from '../../layouts/Layout.astro';
 
         <!-- Promotional Discount Rule -->
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-            Applied Coupon / Discount Rule
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
+            Applied Discount / Promo Rule
           </label>
-          <select id="field-discount" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+          <select id="field-discount" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#714B67]">
             <option value="">None (Standard Pricing)</option>
           </select>
         </div>
 
         <!-- Notes -->
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-            Contract Notes / Po Reference
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
+            Contract Notes / PO Ref
           </label>
           <input 
             type="text" 
             id="field-notes" 
             placeholder="e.g. PO-2026-ALPHA approved by VP" 
-            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+            class="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#714B67]"
           />
         </div>
       </div>
 
       <!-- Line Items Section -->
-      <div class="pt-4 border-t border-slate-800">
-        <div class="flex items-center justify-between mb-3">
+      <div class="pt-3 border-t border-slate-100">
+        <div class="flex items-center justify-between mb-2">
           <div>
-            <h3 class="font-bold text-white text-sm">Recurring Order Lines</h3>
-            <p class="text-[11px] text-slate-400">Select product variants, Odoo branding attributes, and quantities.</p>
+            <h3 class="font-bold text-slate-900 text-xs uppercase tracking-wider">Recurring Order Lines</h3>
+            <p class="text-[11px] text-slate-500">Configure product variants, Odoo branding attributes, and quantities.</p>
           </div>
           <button 
             type="button" 
             id="btn-add-line" 
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 text-xs font-semibold border border-indigo-500/30"
+            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium shadow-2xs"
           >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
             <span>Add Line Item</span>
           </button>
         </div>
 
-        <div class="overflow-x-auto rounded-xl border border-slate-800">
-          <table class="w-full text-left text-xs text-slate-300">
-            <thead class="bg-slate-950 font-bold uppercase tracking-wider text-[10px] text-slate-400 border-b border-slate-800">
+        <div class="overflow-x-auto border border-slate-200 rounded">
+          <table class="erp-table">
+            <thead>
               <tr>
-                <th class="py-2.5 px-3">Product</th>
-                <th class="py-2.5 px-3">Variant (e.g. Odoo +560)</th>
-                <th class="py-2.5 px-3 w-24">Qty</th>
-                <th class="py-2.5 px-3 w-28">Unit Price</th>
-                <th class="py-2.5 px-3 w-32">Subtotal</th>
-                <th class="py-2.5 px-3 w-12 text-center"></th>
+                <th>Product</th>
+                <th>Variant (e.g. Odoo +560)</th>
+                <th class="w-24">Qty</th>
+                <th class="w-28">Unit Price</th>
+                <th class="w-32">Subtotal</th>
+                <th class="w-12 text-center"></th>
               </tr>
             </thead>
-            <tbody id="lines-table-body" class="divide-y divide-slate-800/60 font-medium">
+            <tbody id="lines-table-body">
               <!-- Dynamically populated lines -->
             </tbody>
           </table>
@@ -151,37 +141,37 @@ import Layout from '../../layouts/Layout.astro';
       </div>
 
       <!-- Financial Totals Summary Box -->
-      <div class="flex justify-end pt-4">
-        <div class="w-full sm:w-80 bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 text-xs">
-          <div class="flex items-center justify-between text-slate-400">
+      <div class="flex justify-end pt-2">
+        <div class="w-full sm:w-72 bg-slate-50 p-3.5 rounded border border-slate-200 space-y-1.5 text-xs font-mono">
+          <div class="flex items-center justify-between text-slate-600">
             <span>Subtotal (Recurring):</span>
-            <span class="font-mono text-white font-bold" id="summary-subtotal">$0.00</span>
+            <span class="text-slate-900 font-bold" id="summary-subtotal">$0.00</span>
           </div>
-          <div class="flex items-center justify-between text-slate-400">
+          <div class="flex items-center justify-between text-slate-600">
             <span>Discount:</span>
-            <span class="font-mono text-emerald-400 font-bold" id="summary-discount">-$0.00</span>
+            <span class="text-emerald-700 font-bold" id="summary-discount">-$0.00</span>
           </div>
-          <div class="flex items-center justify-between text-slate-400">
+          <div class="flex items-center justify-between text-slate-600">
             <span>Estimated Tax (18% GST):</span>
-            <span class="font-mono text-white font-bold" id="summary-tax">$0.00</span>
+            <span class="text-slate-900 font-bold" id="summary-tax">$0.00</span>
           </div>
-          <div class="border-t border-slate-800 pt-2 flex items-center justify-between text-sm">
-            <span class="font-bold text-white">Total Recurring Value:</span>
-            <span class="font-mono text-emerald-400 font-extrabold text-base" id="summary-total">$0.00</span>
+          <div class="border-t border-slate-200 pt-1.5 flex items-center justify-between text-sm">
+            <span class="font-bold text-slate-900 font-sans">Recurring Value:</span>
+            <span class="text-[#714B67] font-extrabold text-base" id="summary-total">$0.00</span>
           </div>
         </div>
       </div>
 
       <!-- Action Buttons -->
-      <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
-        <a href="/subscriptions" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">
+      <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+        <a href="/subscriptions" class="px-3.5 py-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium">
           Cancel
         </a>
         <button 
           id="btn-save-draft" 
-          class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 flex items-center gap-2"
+          class="px-4 py-1.5 rounded bg-[#714B67] hover:bg-[#5a3c53] text-white text-xs font-semibold shadow-xs flex items-center gap-1.5"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
           <span>Create Subscription Quotation</span>
         </button>
       </div>
@@ -197,7 +187,6 @@ import Layout from '../../layouts/Layout.astro';
     let quotationTemplates: any[] = [];
     let rowCounter = 0;
 
-    // Set today as default start date
     const todayStr = new Date().toISOString().split('T')[0];
     const startDateInput = document.getElementById('field-start-date') as HTMLInputElement;
     if (startDateInput) startDateInput.value = todayStr;
@@ -252,7 +241,6 @@ import Layout from '../../layouts/Layout.astro';
         `).join('');
       }
 
-      // Add initial default line item
       addLineItem();
     }
 
@@ -265,7 +253,7 @@ import Layout from '../../layouts/Layout.astro';
 
       const tr = document.createElement('tr');
       tr.id = rowId;
-      tr.className = 'hover:bg-slate-800/30 transition-colors line-item-row';
+      tr.className = 'line-item-row';
 
       const selectedProd = catalogProducts.find(p => p.id === productId) || catalogProducts[0];
       const prodOptions = catalogProducts.map(p => `
@@ -273,31 +261,30 @@ import Layout from '../../layouts/Layout.astro';
       `).join('');
 
       tr.innerHTML = `
-        <td class="py-2.5 px-3">
-          <select class="line-product-select w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white focus:outline-none focus:border-indigo-500">
+        <td>
+          <select class="line-product-select w-full bg-white border border-slate-300 rounded px-2 py-1 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#714B67]">
             ${prodOptions}
           </select>
         </td>
-        <td class="py-2.5 px-3">
-          <select class="line-variant-select w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white focus:outline-none focus:border-indigo-500">
+        <td>
+          <select class="line-variant-select w-full bg-white border border-slate-300 rounded px-2 py-1 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#714B67]">
             <option value="">Standard Edition</option>
           </select>
         </td>
-        <td class="py-2.5 px-3">
-          <input type="number" min="1" value="${quantity}" class="line-qty-input w-20 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white font-mono text-center focus:outline-none focus:border-indigo-500" />
+        <td>
+          <input type="number" min="1" value="${quantity}" class="line-qty-input w-20 bg-white border border-slate-300 rounded px-2 py-1 text-xs text-slate-900 font-mono text-center focus:outline-none focus:ring-1 focus:ring-[#714B67]" />
         </td>
-        <td class="py-2.5 px-3 font-mono font-bold text-slate-200 line-unit-price">$0.00</td>
-        <td class="py-2.5 px-3 font-mono font-bold text-emerald-400 line-total-price">$0.00</td>
-        <td class="py-2.5 px-3 text-center">
-          <button type="button" class="btn-remove-line text-slate-500 hover:text-rose-400 p-1 transition-colors">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+        <td class="font-mono font-medium text-slate-700 line-unit-price">$0.00</td>
+        <td class="font-mono font-bold text-slate-900 line-total-price">$0.00</td>
+        <td class="text-center">
+          <button type="button" class="btn-remove-line text-slate-400 hover:text-rose-600 p-1 transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
           </button>
         </td>
       `;
 
       tbody.appendChild(tr);
 
-      // Event listeners for this row
       const prodSelect = tr.querySelector('.line-product-select') as HTMLSelectElement;
       const varSelect = tr.querySelector('.line-variant-select') as HTMLSelectElement;
       const qtyInput = tr.querySelector('.line-qty-input') as HTMLInputElement;
@@ -327,7 +314,7 @@ import Layout from '../../layouts/Layout.astro';
           tr.remove();
           calculateTotals();
         } else {
-          (window as any).showToast('Warning', 'A subscription requires at least one line item', 'warning');
+          alert('A subscription requires at least one line item');
         }
       });
 
@@ -391,13 +378,9 @@ import Layout from '../../layouts/Layout.astro';
       return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
     }
 
-    // Add Line Button
     document.getElementById('btn-add-line')?.addEventListener('click', () => addLineItem());
-
-    // Discount change recalculates totals
     document.getElementById('field-discount')?.addEventListener('change', calculateTotals);
 
-    // Apply Quotation Template
     document.getElementById('btn-apply-template')?.addEventListener('click', async () => {
       const tmplSelect = document.getElementById('template-select') as HTMLSelectElement;
       const tmplId = Number(tmplSelect.value);
@@ -406,15 +389,12 @@ import Layout from '../../layouts/Layout.astro';
       const tmpl = quotationTemplates.find(t => t.id === tmplId);
       if (!tmpl) return;
 
-      // Set plan
       const planSelect = document.getElementById('field-plan') as HTMLSelectElement;
       if (planSelect && tmpl.plan_id) planSelect.value = String(tmpl.plan_id);
 
-      // Set payment terms
       const ptSelect = document.getElementById('field-payment-terms') as HTMLSelectElement;
       if (ptSelect && tmpl.payment_terms) ptSelect.value = tmpl.payment_terms;
 
-      // Clear existing lines and populate from template
       const tbody = document.getElementById('lines-table-body');
       if (tbody) tbody.innerHTML = '';
 
@@ -426,11 +406,9 @@ import Layout from '../../layouts/Layout.astro';
         addLineItem();
       }
 
-      (window as any).showToast('Template Applied', `Populated ${tmpl.name}`, 'success');
       calculateTotals();
     });
 
-    // Form Submission
     document.getElementById('btn-save-draft')?.addEventListener('click', async () => {
       const custSelect = document.getElementById('field-customer') as HTMLSelectElement;
       const planSelect = document.getElementById('field-plan') as HTMLSelectElement;
@@ -444,7 +422,7 @@ import Layout from '../../layouts/Layout.astro';
       const startDate = startDateInput.value;
 
       if (!customerId || !planId || !startDate) {
-        (window as any).showToast('Validation Error', 'Please specify Customer, Plan, and Start Date', 'error');
+        alert('Please specify Customer, Plan, and Start Date');
         return;
       }
 
@@ -476,20 +454,17 @@ import Layout from '../../layouts/Layout.astro';
       btn.disabled = true;
       btn.innerHTML = '<span>Creating Contract...</span>';
 
-      const res = await apiFetch<any>('/api/v1/subscriptions', {
+      const res = await apiFetch<any>('/api/v1/subscriptions/', {
         method: 'POST',
         body: JSON.stringify(payload),
       });
 
       if (res.data?.id) {
-        (window as any).showToast('Quotation Created', `Subscription ${res.data.subscription_number} saved as Draft`, 'success');
-        setTimeout(() => {
-          window.location.href = `/subscriptions/${res.data.id}`;
-        }, 600);
+        window.location.href = `/subscriptions/${res.data.id}`;
       } else {
         btn.disabled = false;
         btn.innerHTML = '<span>Create Subscription Quotation</span>';
-        (window as any).showToast('Creation Failed', res.error || 'Server error', 'error');
+        alert(`Creation Failed: ${res.error || 'Server error'}`);
       }
     });
 

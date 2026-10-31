@@ -2,69 +2,71 @@
 import Layout from '../../layouts/Layout.astro';
 ---
 
-<Layout title="Payments & Ledger — Brightloop ERP" activeNav="payments">
-  <div class="space-y-6">
+<Layout title="Payments Ledger — Brightloop ERP" activeNav="payments" breadcrumbs={[{ label: 'Brightloop ERP', href: '/' }, { label: 'Payments' }]}>
+  <div class="space-y-4">
+    
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
       <div>
-        <div class="flex items-center gap-3">
-          <h1 class="text-2xl font-extrabold text-white tracking-tight">Payments & Reconciliation Ledger</h1>
-          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20" id="payments-count-badge">
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          <span>Payments & Reconciliation Ledger</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-slate-100 text-slate-700 border border-slate-200" id="payments-count-badge">
             ... Transactions
           </span>
-        </div>
-        <p class="text-xs text-slate-400 mt-1">
+        </h1>
+        <p class="text-xs text-slate-500 mt-0.5">
           Immutable audit record of credit card, wire transfer, UPI, and Stripe checkout payments.
         </p>
       </div>
 
-      <div class="flex items-center gap-3">
-        <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl flex items-center gap-3 font-mono text-xs">
-          <span class="text-slate-400 font-sans">Total Collected:</span>
-          <span class="text-emerald-400 font-bold text-sm" id="ledger-total">$0.00</span>
+      <div class="flex items-center gap-2">
+        <div class="bg-white border border-slate-200 px-3 py-1.5 rounded shadow-2xs flex items-center gap-2 text-xs">
+          <span class="text-slate-500 font-semibold uppercase text-[10px] tracking-wider">Total Reconciled:</span>
+          <span class="text-emerald-700 font-mono font-bold text-sm" id="ledger-total">$0.00</span>
         </div>
       </div>
     </div>
 
     <!-- Payments Ledger Table -->
-    <div class="rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl overflow-hidden">
+    <div class="bg-white border border-slate-200 rounded-md shadow-xs overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs text-slate-300">
-          <thead class="bg-slate-950/70 border-b border-slate-800 font-bold uppercase tracking-wider text-[10px] text-slate-400">
+        <table class="erp-table">
+          <thead>
             <tr>
-              <th class="py-3 px-4">Receipt / Ref #</th>
-              <th class="py-3 px-4">Invoice Linked</th>
-              <th class="py-3 px-4">Payment Method</th>
-              <th class="py-3 px-4">Transaction Date</th>
-              <th class="py-3 px-4">Amount Reconciled</th>
-              <th class="py-3 px-4">Status</th>
+              <th>Receipt / Ref #</th>
+              <th>Invoice Linked</th>
+              <th>Payment Method</th>
+              <th>Transaction Date</th>
+              <th>Amount Reconciled</th>
+              <th>Status</th>
             </tr>
           </thead>
-          <tbody id="payments-table" class="divide-y divide-slate-800/60 font-medium">
+          <tbody id="payments-table">
             <tr>
-              <td colspan="6" class="py-12 text-center text-slate-400">Loading payment ledger...</td>
+              <td colspan="6" class="py-8 text-center text-slate-400 text-xs">Loading payment ledger...</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+
   </div>
 
   <script>
     import { apiFetch } from '../../lib/api';
 
     async function loadPayments() {
-      const res = await apiFetch<any>('/api/v1/payments?limit=50');
+      const res = await apiFetch<any>('/api/v1/payments/?limit=50');
       const table = document.getElementById('payments-table');
       const badge = document.getElementById('payments-count-badge');
       const totalEl = document.getElementById('ledger-total');
 
       if (!res.data || !res.data.items) {
-        if (table) table.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-rose-400">Error: ${res.error || 'Failed to load'}</td></tr>`;
+        if (table) table.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-rose-600 text-xs">Error: ${res.error || 'Failed to load'}</td></tr>`;
         return;
       }
 
-      if (badge) badge.textContent = `${res.data.total} Transactions`;
+      if (badge) badge.textContent = `${res.data.items.length} Transactions`;
 
       let sum = 0;
       res.data.items.forEach((p: any) => sum += Number(p.amount || 0));
@@ -72,27 +74,27 @@ import Layout from '../../layouts/Layout.astro';
 
       if (table) {
         if (res.data.items.length === 0) {
-          table.innerHTML = '<tr><td colspan="6" class="py-12 text-center text-slate-400">No payments recorded in the ledger yet.</td></tr>';
+          table.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-400 text-xs">No payments recorded in the ledger yet.</td></tr>';
           return;
         }
 
         table.innerHTML = res.data.items.map((p: any) => `
-          <tr class="hover:bg-slate-800/40 transition-colors font-mono">
-            <td class="py-3 px-4 font-bold text-white">${p.reference_note || 'TXN-' + p.id}</td>
-            <td class="py-3 px-4 text-indigo-400">
-              <a href="/invoices/${p.invoice_id}" class="hover:underline">
+          <tr>
+            <td class="font-mono font-semibold text-slate-900">${p.reference_note || 'TXN-' + p.id}</td>
+            <td class="font-mono text-slate-700">
+              <a href="/invoices/${p.invoice_id}" class="hover:text-[#714B67] hover:underline">
                 ${p.invoice_number || 'INV-#' + p.invoice_id}
               </a>
             </td>
-            <td class="py-3 px-4 font-sans capitalize">
-              <span class="px-2 py-0.5 rounded text-[11px] bg-slate-800 text-slate-200 border border-slate-700">
+            <td>
+              <span class="px-1.5 py-0.2 rounded text-[10px] bg-slate-100 text-slate-700 border border-slate-200 capitalize">
                 ${p.payment_method.replace('_', ' ')}
               </span>
             </td>
-            <td class="py-3 px-4 text-slate-400">${p.payment_date}</td>
-            <td class="py-3 px-4 font-bold text-emerald-400">${formatUSD(p.amount)}</td>
-            <td class="py-3 px-4 font-sans">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+            <td class="font-mono text-slate-600 text-xs">${p.payment_date}</td>
+            <td class="font-mono font-bold text-emerald-700">${formatUSD(p.amount)}</td>
+            <td>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
                 Reconciled
               </span>
             </td>
@@ -101,13 +103,10 @@ import Layout from '../../layouts/Layout.astro';
       }
     }
 
-    function formatUSD(val: number): string {
-      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+    function formatUSD(val: number | string | null | undefined): string {
+      const num = Number(val || 0);
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
     }
-
-    window.addEventListener('brightloop:sse', () => {
-      loadPayments();
-    });
 
     loadPayments();
   </script>

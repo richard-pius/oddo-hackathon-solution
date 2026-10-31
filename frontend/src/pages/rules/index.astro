@@ -2,83 +2,87 @@
 import Layout from '../../layouts/Layout.astro';
 ---
 
-<Layout title="Plans, Taxes & Discounts — Brightloop ERP" activeNav="rules">
-  <div class="space-y-6">
+<Layout title="Plans, Taxes & Discounts — Brightloop ERP" activeNav="rules" breadcrumbs={[{ label: 'Brightloop ERP', href: '/' }, { label: 'Plans & Financial Rules' }]}>
+  <div class="space-y-4">
+    
     <!-- Header -->
-    <div class="border-b border-slate-800/80 pb-5">
-      <div class="flex items-center gap-3">
-        <h1 class="text-2xl font-extrabold text-white tracking-tight">Financial & Lifecycle Rules</h1>
-        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">
-          Engine Configuration
+    <div class="border-b border-slate-200 pb-3">
+      <div class="flex items-center gap-2">
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Financial & Lifecycle Rules</h1>
+        <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+          Engine Config
         </span>
       </div>
-      <p class="text-xs text-slate-400 mt-1">
+      <p class="text-xs text-slate-500 mt-0.5">
         Configure subscription intervals, 18% GST tax rules, volume tier discounts, and quotation templates.
       </p>
     </div>
 
-    <!-- 3 Core Rule Sections -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- 3 Core Rule Columns -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      
       <!-- 1. Subscription Plans -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div class="bg-white border border-slate-200 rounded-md p-4 shadow-xs space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
           <div class="flex items-center gap-2">
-            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-            <h2 class="font-bold text-white text-sm">Subscription Plans</h2>
+            <svg class="w-4 h-4 text-[#714B67]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            <h2 class="font-bold text-slate-900 text-xs uppercase tracking-wider">Subscription Plans</h2>
           </div>
           <span class="text-[10px] text-slate-400 font-mono">Interval Rules</span>
         </div>
 
-        <div id="plans-container" class="space-y-2.5 text-xs">
-          <div class="text-slate-400 py-6 text-center">Loading plans...</div>
+        <div id="plans-container" class="space-y-2 text-xs">
+          <div class="text-slate-400 py-4 text-center">Loading plans...</div>
         </div>
       </div>
 
       <!-- 2. Discount Engines -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div class="bg-white border border-slate-200 rounded-md p-4 shadow-xs space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
           <div class="flex items-center gap-2">
-            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
-            <h2 class="font-bold text-white text-sm">Discount Rules & Coupons</h2>
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+            <h2 class="font-bold text-slate-900 text-xs uppercase tracking-wider">Discount Rules & Coupons</h2>
           </div>
           <span class="text-[10px] text-slate-400 font-mono">Volume Tiers</span>
         </div>
 
-        <div id="discounts-container" class="space-y-2.5 text-xs">
-          <div class="text-slate-400 py-6 text-center">Loading discounts...</div>
+        <div id="discounts-container" class="space-y-2 text-xs">
+          <div class="text-slate-400 py-4 text-center">Loading discounts...</div>
         </div>
       </div>
 
       <!-- 3. Tax Jurisdictions -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div class="bg-white border border-slate-200 rounded-md p-4 shadow-xs space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
           <div class="flex items-center gap-2">
-            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z"></path></svg>
-            <h2 class="font-bold text-white text-sm">Tax Rules & GST</h2>
+            <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"></path></svg>
+            <h2 class="font-bold text-slate-900 text-xs uppercase tracking-wider">Tax Rules & GST</h2>
           </div>
           <span class="text-[10px] text-slate-400 font-mono">Auto-Assigned</span>
         </div>
 
-        <div id="taxes-container" class="space-y-2.5 text-xs">
-          <div class="text-slate-400 py-6 text-center">Loading taxes...</div>
+        <div id="taxes-container" class="space-y-2 text-xs">
+          <div class="text-slate-400 py-4 text-center">Loading taxes...</div>
         </div>
       </div>
+
     </div>
 
     <!-- Quotation Templates Section -->
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
-      <div class="border-b border-slate-800 pb-3 flex items-center justify-between">
+    <div class="bg-white border border-slate-200 rounded-md p-4 shadow-xs space-y-3">
+      <div class="border-b border-slate-100 pb-2.5 flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-          <h2 class="font-bold text-white text-sm">Enterprise Quotation Templates</h2>
+          <svg class="w-4 h-4 text-[#714B67]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          <h2 class="font-bold text-slate-900 text-xs uppercase tracking-wider">Enterprise Quotation Templates</h2>
         </div>
         <span class="text-[10px] text-slate-400 font-mono">1-Click Auto-Quotation</span>
       </div>
 
-      <div id="templates-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+      <div id="templates-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
         <div class="text-slate-400 py-6 text-center col-span-2">Loading templates...</div>
       </div>
     </div>
+
   </div>
 
   <script>
@@ -96,12 +100,12 @@ import Layout from '../../layouts/Layout.astro';
       const plansBox = document.getElementById('plans-container')!;
       if (plansRes.data && plansRes.data.length > 0) {
         plansBox.innerHTML = plansRes.data.map((p: any) => `
-          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+          <div class="p-2.5 rounded bg-slate-50 border border-slate-200 space-y-1">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-white text-xs">${p.name}</span>
-              <span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-indigo-500/20 text-indigo-300 font-mono">${p.billing_interval}</span>
+              <span class="font-bold text-slate-900 text-xs">${p.name}</span>
+              <span class="px-1.5 py-0.2 rounded text-[10px] uppercase font-mono font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">${p.billing_interval}</span>
             </div>
-            <div class="text-[11px] text-slate-400 flex items-center justify-between font-mono">
+            <div class="text-[11px] text-slate-600 flex items-center justify-between font-mono">
               <span>Base Plan Fee: <strong>$${p.base_cost}</strong></span>
               <span>Min Qty: <strong>${p.min_quantity}</strong></span>
             </div>
@@ -113,14 +117,14 @@ import Layout from '../../layouts/Layout.astro';
       const discsBox = document.getElementById('discounts-container')!;
       if (discsRes.data && discsRes.data.length > 0) {
         discsBox.innerHTML = discsRes.data.map((d: any) => `
-          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+          <div class="p-2.5 rounded bg-slate-50 border border-slate-200 space-y-1">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-white text-xs">${d.name}</span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300">${d.code}</span>
+              <span class="font-bold text-slate-900 text-xs">${d.name}</span>
+              <span class="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">${d.code}</span>
             </div>
-            <div class="text-[11px] text-slate-400 flex items-center justify-between font-mono">
+            <div class="text-[11px] text-slate-600 flex items-center justify-between font-mono">
               <span>Type: <strong class="capitalize">${d.discount_type.replace('_', ' ')}</strong></span>
-              <span class="font-bold text-emerald-400">${d.discount_type === 'percentage' ? d.value + '%' : '$' + d.value}</span>
+              <span class="font-bold text-emerald-700">${d.discount_type === 'percentage' ? d.value + '%' : '$' + d.value}</span>
             </div>
           </div>
         `).join('');
@@ -130,12 +134,12 @@ import Layout from '../../layouts/Layout.astro';
       const taxesBox = document.getElementById('taxes-container')!;
       if (taxesRes.data && taxesRes.data.length > 0) {
         taxesBox.innerHTML = taxesRes.data.map((t: any) => `
-          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+          <div class="p-2.5 rounded bg-slate-50 border border-slate-200 space-y-1">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-white text-xs">${t.name}</span>
-              <span class="font-bold text-amber-400 font-mono">${t.rate_percent}%</span>
+              <span class="font-bold text-slate-900 text-xs">${t.name}</span>
+              <span class="font-bold text-amber-800 font-mono">${t.rate_percent}%</span>
             </div>
-            <div class="text-[11px] text-slate-400">
+            <div class="text-[11px] text-slate-500">
               Applies to SaaS software subscriptions and cloud compute.
             </div>
           </div>
@@ -146,13 +150,13 @@ import Layout from '../../layouts/Layout.astro';
       const tmplsBox = document.getElementById('templates-container')!;
       if (tmplsRes.data && tmplsRes.data.length > 0) {
         tmplsBox.innerHTML = tmplsRes.data.map((t: any) => `
-          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800/80 space-y-2">
+          <div class="p-3 rounded bg-slate-50 border border-slate-200 space-y-1.5">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-white text-sm">${t.name}</span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-500/20 text-cyan-300">${t.payment_terms}</span>
+              <span class="font-bold text-slate-900 text-xs">${t.name}</span>
+              <span class="px-1.5 py-0.2 rounded text-[10px] font-mono bg-slate-200 text-slate-700">${t.payment_terms}</span>
             </div>
-            <p class="text-xs text-slate-400">${t.notes || 'Pre-configured quotation lines bundle.'}</p>
-            <div class="text-[11px] text-slate-500 font-mono">
+            <p class="text-[11px] text-slate-500">${t.notes || 'Pre-configured quotation lines bundle.'}</p>
+            <div class="text-[10px] text-slate-400 font-mono">
               Lines count: ${t.template_lines?.length || 0} configured items
             </div>
           </div>

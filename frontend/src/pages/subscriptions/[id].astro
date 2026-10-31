@@ -15,19 +15,19 @@ export function getStaticPaths() {
 const { id } = Astro.params;
 ---
 
-<Layout title={`Subscription Details — Brightloop ERP`} activeNav="subscriptions">
-  <div class="max-w-6xl mx-auto space-y-6">
-    <!-- Breadcrumb & Top Bar -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
-      <nav class="flex items-center gap-2 text-xs text-slate-400">
-        <a href="/" class="hover:text-white">Dashboard</a>
-        <span>/</span>
-        <a href="/subscriptions" class="hover:text-white">Subscriptions</a>
-        <span>/</span>
-        <span class="text-indigo-400 font-mono font-bold" id="bc-sub-num">SUB-...</span>
-      </nav>
+<Layout title="Subscription Details — Brightloop ERP" activeNav="subscriptions" breadcrumbs={[{ label: 'Brightloop ERP', href: '/' }, { label: 'Subscriptions', href: '/subscriptions' }, { label: 'Contract Detail' }]}>
+  <div class="max-w-5xl mx-auto space-y-4">
+    
+    <!-- Top Action Bar with Chevron Ribbon Pipeline -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
+      <div class="flex items-center gap-2">
+        <h1 class="text-xl font-bold font-mono text-slate-900 tracking-tight" id="sub-number">SUB-...</h1>
+        <span id="sub-status-badge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border">
+          ...
+        </span>
+      </div>
 
-      <!-- Status Pipeline Ribbon (Odoo chevron style) -->
+      <!-- Odoo Status Ribbon Pipeline -->
       <div class="status-ribbon self-start sm:self-auto" id="pipeline-ribbon">
         <div class="status-step" data-step="draft">1. Draft</div>
         <div class="status-step" data-step="quotation">2. Quotation</div>
@@ -38,18 +38,16 @@ const { id } = Astro.params;
       </div>
     </div>
 
-    <!-- ERP Action Toolbar (State Machine Control Buttons) -->
-    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 shadow-lg flex flex-wrap items-center justify-between gap-3">
-      <div class="flex flex-wrap items-center gap-2" id="action-buttons-container">
-        <!-- Buttons injected dynamically based on current status -->
-        <span class="text-xs text-slate-400 font-mono">Loading lifecycle actions...</span>
+    <!-- ERP Action Buttons Strip (Odoo Lifecycle Controls) -->
+    <div class="bg-white border border-slate-200 rounded-md p-2.5 shadow-2xs flex flex-wrap items-center justify-between gap-2">
+      <div class="flex flex-wrap items-center gap-1.5" id="action-buttons-container">
+        <span class="text-xs text-slate-400 font-mono">Loading state actions...</span>
       </div>
 
-      <!-- Quick Action Utilities -->
       <div class="flex items-center gap-2">
         <button 
           id="btn-open-prorate-modal" 
-          class="hidden items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 text-xs font-semibold border border-cyan-500/30 transition-colors"
+          class="hidden items-center gap-1.5 px-2.5 py-1 rounded bg-[#714B67] hover:bg-[#5a3c53] text-white text-xs font-semibold transition-colors shadow-2xs"
         >
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
           <span>Prorated Upgrade (Seats)</span>
@@ -57,106 +55,103 @@ const { id } = Astro.params;
 
         <button 
           id="btn-manual-invoice" 
-          class="hidden items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors"
+          class="hidden items-center gap-1.5 px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium transition-colors shadow-2xs"
         >
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"></path></svg>
-          <span>Generate Invoice Now</span>
+          <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"></path></svg>
+          <span>Generate Invoice</span>
         </button>
       </div>
     </div>
 
     <!-- Contract Master Card -->
-    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
-      <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-slate-800 pb-5">
+    <div class="bg-white border border-slate-200 rounded-md p-6 shadow-xs space-y-6">
+      
+      <!-- Customer & Commitment Summary -->
+      <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-slate-100 pb-4">
         <div>
-          <div class="flex items-center gap-3">
-            <h1 class="text-2xl font-black text-white tracking-tight font-mono" id="sub-number">...</h1>
-            <span id="sub-status-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider">
-              ...
-            </span>
-          </div>
-          <div class="text-sm font-semibold text-slate-300 mt-1" id="sub-customer-name">...</div>
-          <div class="text-xs text-slate-500" id="sub-customer-email">...</div>
+          <div class="text-xs uppercase font-semibold text-slate-400 tracking-wider">Customer Organization</div>
+          <div class="text-lg font-bold text-slate-900 mt-0.5" id="sub-customer-name">...</div>
+          <div class="text-xs text-slate-500 font-mono" id="sub-customer-email">...</div>
         </div>
 
-        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/80 text-right font-mono">
-          <div class="text-[10px] uppercase tracking-wider text-slate-400 font-sans">Recurring Commitment</div>
-          <div class="text-2xl font-black text-emerald-400" id="sub-total-recurring">$0.00</div>
-          <div class="text-[11px] text-slate-400 capitalize" id="sub-interval-text">Every Month</div>
+        <div class="bg-slate-50 p-3 rounded border border-slate-200 text-right">
+          <div class="text-[10px] uppercase font-semibold text-slate-500 tracking-wider">Recurring Commitment</div>
+          <div class="text-xl font-bold font-mono text-slate-900" id="sub-total-recurring">$0.00</div>
+          <div class="text-xs text-slate-500 capitalize" id="sub-interval-text">Every Month</div>
         </div>
       </div>
 
-      <!-- Key Dates & Master Parameters Grid -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono">
-        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80">
-          <div class="text-slate-400 font-sans text-[10px] uppercase">Plan</div>
-          <div class="text-white font-bold text-sm mt-0.5" id="sub-plan-name">...</div>
+      <!-- Contract Parameter Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+        <div class="bg-slate-50 p-2.5 rounded border border-slate-200">
+          <div class="text-slate-400 text-[10px] uppercase font-semibold">Subscription Plan</div>
+          <div class="text-slate-900 font-bold mt-0.5 text-sm" id="sub-plan-name">...</div>
         </div>
-        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80">
-          <div class="text-slate-400 font-sans text-[10px] uppercase">Start Date</div>
-          <div class="text-slate-200 font-bold mt-0.5" id="sub-start-date">...</div>
+        <div class="bg-slate-50 p-2.5 rounded border border-slate-200">
+          <div class="text-slate-400 text-[10px] uppercase font-semibold">Start Date</div>
+          <div class="text-slate-800 font-mono font-medium mt-0.5 text-xs" id="sub-start-date">...</div>
         </div>
-        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80">
-          <div class="text-slate-400 font-sans text-[10px] uppercase">Next Billing Date</div>
-          <div class="text-indigo-400 font-bold mt-0.5" id="sub-next-billing">...</div>
+        <div class="bg-slate-50 p-2.5 rounded border border-slate-200">
+          <div class="text-slate-400 text-[10px] uppercase font-semibold">Next Billing Date</div>
+          <div class="text-[#714B67] font-mono font-bold mt-0.5 text-xs" id="sub-next-billing">...</div>
         </div>
-        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80">
-          <div class="text-slate-400 font-sans text-[10px] uppercase">Payment Terms</div>
-          <div class="text-slate-200 font-bold mt-0.5" id="sub-payment-terms">Net 30</div>
+        <div class="bg-slate-50 p-2.5 rounded border border-slate-200">
+          <div class="text-slate-400 text-[10px] uppercase font-semibold">Payment Terms</div>
+          <div class="text-slate-800 font-medium mt-0.5 text-xs" id="sub-payment-terms">Net 30</div>
         </div>
       </div>
 
       <!-- Tab Navigation (Odoo ERP Form Layout) -->
       <div>
-        <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
-          <button class="tab-btn active px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white" data-tab="tab-lines">
+        <div class="flex items-center gap-1 border-b border-slate-200">
+          <button class="tab-btn active px-3.5 py-2 text-xs font-semibold text-[#714B67] border-b-2 border-[#714B67] transition-colors" data-tab="tab-lines">
             Order Lines (<span id="count-lines">0</span>)
           </button>
-          <button class="tab-btn px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white" data-tab="tab-invoices">
-            Invoices & Receipts (<span id="count-invoices">0</span>)
+          <button class="tab-btn px-3.5 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors" data-tab="tab-invoices">
+            Invoices & Billing (<span id="count-invoices">0</span>)
           </button>
-          <button class="tab-btn px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white" data-tab="tab-chatter">
+          <button class="tab-btn px-3.5 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors" data-tab="tab-chatter">
             Audit Trail & Chatter (<span id="count-audit">0</span>)
           </button>
         </div>
 
         <!-- TAB 1: Order Lines -->
         <div id="tab-lines" class="tab-pane pt-4 space-y-4">
-          <div class="overflow-x-auto rounded-xl border border-slate-800">
-            <table class="w-full text-left text-xs text-slate-300">
-              <thead class="bg-slate-950 font-bold uppercase tracking-wider text-[10px] text-slate-400 border-b border-slate-800">
+          <div class="overflow-x-auto border border-slate-200 rounded">
+            <table class="erp-table">
+              <thead>
                 <tr>
-                  <th class="py-2.5 px-3">Description</th>
-                  <th class="py-2.5 px-3">Qty</th>
-                  <th class="py-2.5 px-3">Unit Price</th>
-                  <th class="py-2.5 px-3">Discount</th>
-                  <th class="py-2.5 px-3">Tax</th>
-                  <th class="py-2.5 px-3 text-right">Line Total</th>
+                  <th>Description</th>
+                  <th>Quantity</th>
+                  <th>Unit Price</th>
+                  <th>Discount</th>
+                  <th>Tax</th>
+                  <th class="text-right">Line Total</th>
                 </tr>
               </thead>
-              <tbody id="lines-tbody" class="divide-y divide-slate-800/60 font-medium">
+              <tbody id="lines-tbody">
                 <!-- Lines injected -->
               </tbody>
             </table>
           </div>
 
-          <div class="flex justify-end pt-2">
-            <div class="w-72 bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 text-xs">
-              <div class="flex justify-between text-slate-400">
+          <div class="flex justify-end pt-1">
+            <div class="w-64 bg-slate-50 p-3 rounded border border-slate-200 space-y-1.5 text-xs font-mono">
+              <div class="flex justify-between text-slate-600">
                 <span>Subtotal:</span>
-                <span class="font-mono text-white font-bold" id="fin-subtotal">$0.00</span>
+                <span class="text-slate-900 font-bold" id="fin-subtotal">$0.00</span>
               </div>
-              <div class="flex justify-between text-slate-400">
+              <div class="flex justify-between text-slate-600">
                 <span>Discount:</span>
-                <span class="font-mono text-emerald-400 font-bold" id="fin-discount">-$0.00</span>
+                <span class="text-emerald-700 font-bold" id="fin-discount">-$0.00</span>
               </div>
-              <div class="flex justify-between text-slate-400">
+              <div class="flex justify-between text-slate-600">
                 <span>Taxes:</span>
-                <span class="font-mono text-white font-bold" id="fin-tax">$0.00</span>
+                <span class="text-slate-900 font-bold" id="fin-tax">$0.00</span>
               </div>
-              <div class="border-t border-slate-800 pt-2 flex justify-between text-sm">
-                <span class="font-bold text-white">Total Recurring:</span>
-                <span class="font-mono text-emerald-400 font-extrabold" id="fin-total">$0.00</span>
+              <div class="border-t border-slate-200 pt-1.5 flex justify-between text-sm">
+                <span class="font-bold text-slate-900 font-sans">Recurring Total:</span>
+                <span class="text-slate-900 font-extrabold" id="fin-total">$0.00</span>
               </div>
             </div>
           </div>
@@ -164,20 +159,20 @@ const { id } = Astro.params;
 
         <!-- TAB 2: Invoices -->
         <div id="tab-invoices" class="tab-pane hidden pt-4 space-y-4">
-          <div class="overflow-x-auto rounded-xl border border-slate-800">
-            <table class="w-full text-left text-xs text-slate-300">
-              <thead class="bg-slate-950 font-bold uppercase tracking-wider text-[10px] text-slate-400 border-b border-slate-800">
+          <div class="overflow-x-auto border border-slate-200 rounded">
+            <table class="erp-table">
+              <thead>
                 <tr>
-                  <th class="py-2.5 px-3">Invoice #</th>
-                  <th class="py-2.5 px-3">Issue Date</th>
-                  <th class="py-2.5 px-3">Due Date</th>
-                  <th class="py-2.5 px-3">Total Amount</th>
-                  <th class="py-2.5 px-3">Amount Due</th>
-                  <th class="py-2.5 px-3">Status</th>
-                  <th class="py-2.5 px-3 text-right">PDF Download</th>
+                  <th>Invoice #</th>
+                  <th>Issue Date</th>
+                  <th>Due Date</th>
+                  <th>Total Amount</th>
+                  <th>Amount Due</th>
+                  <th>Status</th>
+                  <th class="text-right">PDF Download</th>
                 </tr>
               </thead>
-              <tbody id="invoices-tbody" class="divide-y divide-slate-800/60 font-medium">
+              <tbody id="invoices-tbody">
                 <!-- Invoices injected -->
               </tbody>
             </table>
@@ -187,88 +182,85 @@ const { id } = Astro.params;
         <!-- TAB 3: Audit Trail & Chatter -->
         <div id="tab-chatter" class="tab-pane hidden pt-4 space-y-4">
           <!-- Chatter Input Box -->
-          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
-            <div class="text-xs font-bold text-white uppercase tracking-wider">Log Contract Activity / Note</div>
+          <div class="bg-slate-50 p-3.5 rounded border border-slate-200 space-y-2">
+            <div class="text-xs font-semibold text-slate-700 uppercase tracking-wider">Log Contract Activity / Internal Note</div>
             <textarea 
               id="chatter-input" 
               rows="2" 
               placeholder="Add domain note, pricing exception, or billing correspondence..." 
-              class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              class="w-full bg-white border border-slate-300 rounded p-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#714B67] focus:border-[#714B67]"
             ></textarea>
             <div class="flex justify-end">
-              <button id="btn-post-chatter" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30">
+              <button id="btn-post-chatter" class="px-3 py-1 rounded bg-[#714B67] hover:bg-[#5a3c53] text-white text-xs font-semibold shadow-2xs">
                 Post Note
               </button>
             </div>
           </div>
 
           <!-- Chatter Feed -->
-          <div id="chatter-feed" class="chatter-feed space-y-4 pt-2">
+          <div id="chatter-feed" class="chatter-feed space-y-3 pt-1">
             <!-- Chatter logs injected -->
           </div>
         </div>
+
       </div>
     </div>
+
   </div>
 
   <!-- Prorated Seat Upgrade Modal -->
-  <div id="prorate-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-cyan-600/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-          </div>
-          <div>
-            <h3 class="font-bold text-white text-base">Prorated Seat Expansion</h3>
-            <p class="text-xs text-slate-400">Mid-cycle seat increase with immediate pro-rata invoice.</p>
-          </div>
+  <div id="prorate-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 rounded-md p-5 max-w-md w-full shadow-lg space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+        <div>
+          <h3 class="font-bold text-slate-900 text-sm">Prorated Seat Expansion</h3>
+          <p class="text-xs text-slate-500">Mid-cycle seat increase with immediate pro-rata invoice.</p>
         </div>
-        <button id="btn-close-prorate" class="text-slate-400 hover:text-white p-1">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        <button id="btn-close-prorate" class="text-slate-400 hover:text-slate-600 p-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
       </div>
 
-      <div class="space-y-4 text-xs">
+      <div class="space-y-3 text-xs">
         <div>
-          <label class="block font-bold text-slate-300 mb-1">Select Subscription Line Item</label>
-          <select id="prorate-line-select" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500">
+          <label class="block font-semibold text-slate-700 mb-1">Select Subscription Line Item</label>
+          <select id="prorate-line-select" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#714B67]">
             <!-- Populated dynamically -->
           </select>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-bold text-slate-300 mb-1">Current Seats</label>
-            <input type="text" id="prorate-current-seats" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 font-mono text-slate-400" value="0" />
+            <label class="block font-semibold text-slate-700 mb-1">Current Seats</label>
+            <input type="text" id="prorate-current-seats" readonly class="w-full bg-slate-100 border border-slate-200 rounded px-2.5 py-1.5 font-mono text-slate-600" value="0" />
           </div>
           <div>
-            <label class="block font-bold text-slate-300 mb-1">New Total Seats</label>
-            <input type="number" id="prorate-new-seats" min="1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 font-mono text-white focus:outline-none focus:border-cyan-500" value="1" />
+            <label class="block font-semibold text-slate-700 mb-1">New Total Seats</label>
+            <input type="number" id="prorate-new-seats" min="1" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#714B67]" value="1" />
           </div>
         </div>
 
-        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 font-mono">
-          <div class="flex justify-between text-slate-400">
-            <span>Days Remaining in Cycle:</span>
-            <span class="text-white font-bold" id="prorate-days-remaining">15 days</span>
+        <div class="bg-slate-50 p-3 rounded border border-slate-200 space-y-1.5 font-mono text-xs">
+          <div class="flex justify-between text-slate-600">
+            <span>Days Remaining in Period:</span>
+            <span class="text-slate-900 font-bold" id="prorate-days-remaining">15 days</span>
           </div>
-          <div class="flex justify-between text-slate-400">
+          <div class="flex justify-between text-slate-600">
             <span>Additional Recurring/Mo:</span>
-            <span class="text-white font-bold" id="prorate-additional-mrr">$0.00</span>
+            <span class="text-slate-900 font-bold" id="prorate-additional-mrr">$0.00</span>
           </div>
-          <div class="border-t border-slate-800 pt-2 flex justify-between text-sm">
-            <span class="text-white font-bold font-sans">Immediate Prorated Invoice:</span>
-            <span class="text-emerald-400 font-extrabold" id="prorate-invoice-amount">$0.00</span>
+          <div class="border-t border-slate-200 pt-1.5 flex justify-between text-xs">
+            <span class="text-slate-900 font-bold font-sans">Immediate Pro-Rata Invoice:</span>
+            <span class="text-[#714B67] font-extrabold text-sm" id="prorate-invoice-amount">$0.00</span>
           </div>
         </div>
       </div>
 
-      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
-        <button id="btn-cancel-prorate" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <button id="btn-cancel-prorate" class="px-3 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium">
           Cancel
         </button>
-        <button id="btn-submit-prorate" class="px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-lg shadow-cyan-600/30">
+        <button id="btn-submit-prorate" class="px-3.5 py-1 rounded bg-[#714B67] hover:bg-[#5a3c53] text-white text-xs font-semibold shadow-xs">
           Confirm Upgrade & Invoice
         </button>
       </div>
@@ -278,7 +270,6 @@ const { id } = Astro.params;
   <script>
     import { apiFetch, API_URL } from '../../lib/api';
 
-    // Parse ID from URL pathname
     const parts = window.location.pathname.split('/');
     const subId = Number(parts[parts.length - 1] || parts[parts.length - 2]);
 
@@ -294,7 +285,7 @@ const { id } = Astro.params;
       ]);
 
       if (!subRes.data) {
-        (window as any).showToast('Error', subRes.error || 'Subscription not found', 'error');
+        alert(subRes.error || 'Subscription not found');
         return;
       }
 
@@ -307,7 +298,6 @@ const { id } = Astro.params;
     }
 
     function renderHeaderAndPipeline(sub: any) {
-      document.getElementById('bc-sub-num')!.textContent = sub.subscription_number;
       document.getElementById('sub-number')!.textContent = sub.subscription_number;
       document.getElementById('sub-customer-name')!.textContent = sub.customer_name || `Customer #${sub.customer_id}`;
       document.getElementById('sub-customer-email')!.textContent = sub.customer_email || '';
@@ -321,7 +311,7 @@ const { id } = Astro.params;
       // Badge
       const badge = document.getElementById('sub-status-badge')!;
       badge.textContent = sub.status;
-      badge.className = `px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border ${getStatusClass(sub.status)}`;
+      badge.className = `px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getStatusClass(sub.status)}`;
 
       // Odoo Status Ribbon
       const order = ['draft', 'quotation', 'confirmed', 'active', 'paused', 'closed'];
@@ -352,63 +342,63 @@ const { id } = Astro.params;
 
       if (s === 'draft') {
         container.innerHTML = `
-          <button class="btn-transition px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30" data-target="quotation">
+          <button class="btn-transition px-3 py-1 rounded bg-[#714B67] hover:bg-[#5a3c53] text-white text-xs font-semibold shadow-2xs" data-target="quotation">
             Send Quotation
           </button>
-          <button class="btn-transition px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold" data-target="confirmed">
+          <button class="btn-transition px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold" data-target="confirmed">
             Confirm Order
           </button>
-          <button class="btn-transition px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-rose-300 text-xs font-semibold" data-target="cancelled">
+          <button class="btn-transition px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-rose-700 text-xs font-medium" data-target="cancelled">
             Cancel
           </button>
         `;
       } else if (s === 'quotation') {
         container.innerHTML = `
-          <button class="btn-transition px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/30" data-target="confirmed">
+          <button class="btn-transition px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-2xs" data-target="confirmed">
             Confirm Order
           </button>
-          <button class="btn-transition px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-rose-300 text-xs font-semibold" data-target="cancelled">
+          <button class="btn-transition px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-rose-700 text-xs font-medium" data-target="cancelled">
             Cancel
           </button>
         `;
       } else if (s === 'confirmed') {
         container.innerHTML = `
-          <button class="btn-transition px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/30" data-target="active">
+          <button class="btn-transition px-3 py-1 rounded bg-[#714B67] hover:bg-[#5a3c53] text-white text-xs font-semibold shadow-2xs" data-target="active">
             Activate Subscription
           </button>
-          <button class="btn-transition px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-rose-300 text-xs font-semibold" data-target="cancelled">
+          <button class="btn-transition px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-rose-700 text-xs font-medium" data-target="cancelled">
             Cancel
           </button>
         `;
       } else if (s === 'active') {
         prorateBtn.classList.remove('hidden');
-        prorateBtn.classList.add('flex');
+        prorateBtn.classList.add('inline-flex');
         manualInvBtn.classList.remove('hidden');
-        manualInvBtn.classList.add('flex');
+        manualInvBtn.classList.add('inline-flex');
 
         container.innerHTML = `
-          <button class="btn-transition px-3.5 py-1.5 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 text-xs font-semibold" data-target="paused">
+          <button class="btn-transition px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-amber-700 text-xs font-medium" data-target="paused">
             Pause Contract
           </button>
-          <button class="btn-transition px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold" data-target="closed">
+          <button class="btn-transition px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium" data-target="closed">
             Close Contract
           </button>
-          <button class="btn-transition px-3 py-1.5 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 text-xs font-semibold" data-target="cancelled">
+          <button class="btn-transition px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-rose-700 text-xs font-medium" data-target="cancelled">
             Cancel
           </button>
         `;
       } else if (s === 'paused') {
         container.innerHTML = `
-          <button class="btn-transition px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold" data-target="active">
+          <button class="btn-transition px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold" data-target="active">
             Resume Subscription
           </button>
-          <button class="btn-transition px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-rose-300 text-xs font-semibold" data-target="cancelled">
+          <button class="btn-transition px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-rose-700 text-xs font-medium" data-target="cancelled">
             Cancel
           </button>
         `;
       }
 
-      // Attach transition click events
+      // Attach transitions
       document.querySelectorAll('.btn-transition').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           const targetStatus = (e.currentTarget as HTMLElement).dataset.target!;
@@ -418,10 +408,9 @@ const { id } = Astro.params;
           });
 
           if (res.data) {
-            (window as any).showToast('Lifecycle State Updated', `Contract transitioned to ${targetStatus.toUpperCase()}`, 'success');
             loadSubscription();
           } else {
-            (window as any).showToast('Transition Error', res.error || 'Failed', 'error');
+            alert(`Transition Error: ${res.error || 'Failed'}`);
           }
         });
       });
@@ -434,16 +423,16 @@ const { id } = Astro.params;
       countEl.textContent = String(lines.length);
 
       if (lines.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-400">No line items.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="py-4 text-center text-slate-400 text-xs">No line items.</td></tr>';
       } else {
         tbody.innerHTML = lines.map((l: any) => `
-          <tr class="hover:bg-slate-800/30 transition-colors">
-            <td class="py-2.5 px-3 font-semibold text-white">${l.description}</td>
-            <td class="py-2.5 px-3 font-mono font-bold text-slate-200">${l.quantity}</td>
-            <td class="py-2.5 px-3 font-mono text-slate-300">${formatUSD(l.unit_price)}</td>
-            <td class="py-2.5 px-3 font-mono text-emerald-400">-${formatUSD(l.discount_amount || 0)}</td>
-            <td class="py-2.5 px-3 font-mono text-slate-400">${formatUSD(l.tax_amount || 0)}</td>
-            <td class="py-2.5 px-3 font-mono font-bold text-emerald-400 text-right">${formatUSD(l.total_amount || l.subtotal || 0)}</td>
+          <tr>
+            <td class="font-medium text-slate-900">${l.description}</td>
+            <td class="font-mono font-bold text-slate-800">${l.quantity}</td>
+            <td class="font-mono text-slate-700">${formatUSD(l.unit_price)}</td>
+            <td class="font-mono text-emerald-700">-${formatUSD(l.discount_amount || 0)}</td>
+            <td class="font-mono text-slate-600">${formatUSD(l.tax_amount || 0)}</td>
+            <td class="font-mono font-bold text-slate-900 text-right">${formatUSD(l.total_amount || l.subtotal || 0)}</td>
           </tr>
         `).join('');
       }
@@ -460,31 +449,27 @@ const { id } = Astro.params;
       countEl.textContent = String(invoices.length);
 
       if (invoices.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="py-6 text-center text-slate-400">No invoices generated for this subscription yet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="py-4 text-center text-slate-400 text-xs">No invoices generated yet.</td></tr>';
       } else {
         tbody.innerHTML = invoices.map((inv: any) => `
-          <tr class="hover:bg-slate-800/30 transition-colors">
-            <td class="py-2.5 px-3 font-mono font-bold text-white">
-              <a href="/invoices/${inv.id}" class="hover:text-indigo-400 underline decoration-indigo-500/40">
+          <tr>
+            <td class="font-mono font-bold text-slate-900">
+              <a href="/invoices/${inv.id}" class="hover:text-[#714B67] underline decoration-slate-300">
                 ${inv.invoice_number}
               </a>
             </td>
-            <td class="py-2.5 px-3 font-mono text-slate-400">${inv.issue_date}</td>
-            <td class="py-2.5 px-3 font-mono text-slate-400">${inv.due_date}</td>
-            <td class="py-2.5 px-3 font-mono font-bold text-white">${formatUSD(inv.total_amount)}</td>
-            <td class="py-2.5 px-3 font-mono font-bold ${inv.amount_due > 0 ? 'text-amber-400' : 'text-slate-400'}">${formatUSD(inv.amount_due)}</td>
-            <td class="py-2.5 px-3">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getInvoiceClass(inv.status)}">
+            <td class="font-mono text-slate-600">${inv.issue_date}</td>
+            <td class="font-mono text-slate-600">${inv.due_date}</td>
+            <td class="font-mono font-bold text-slate-900">${formatUSD(inv.total_amount)}</td>
+            <td class="font-mono font-bold ${inv.amount_due > 0 ? 'text-amber-700' : 'text-slate-500'}">${formatUSD(inv.amount_due)}</td>
+            <td>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getInvoiceClass(inv.status)}">
                 ${inv.status}
               </span>
             </td>
-            <td class="py-2.5 px-3 text-right">
-              <a 
-                href="${API_URL}/api/v1/billing/invoices/${inv.id}/pdf" 
-                target="_blank" 
-                class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-[11px] border border-slate-700"
-              >
-                PDF Receipt
+            <td class="text-right">
+              <a href="${API_URL}/api/v1/billing/invoices/${inv.id}/pdf" target="_blank" class="px-2 py-0.5 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium text-[11px] shadow-2xs">
+                PDF
               </a>
             </td>
           </tr>
@@ -498,71 +483,39 @@ const { id } = Astro.params;
       countEl.textContent = String(audits.length);
 
       if (audits.length === 0) {
-        feed.innerHTML = '<div class="text-xs text-slate-400 italic">No activity recorded yet.</div>';
+        feed.innerHTML = '<div class="text-xs text-slate-400 py-3">No activity logged yet.</div>';
       } else {
         feed.innerHTML = audits.map((a: any) => `
-          <div class="relative pl-6 pb-2">
-            <div class="absolute -left-[7px] top-1.5 w-3 h-3 rounded-full bg-indigo-500 ring-4 ring-[#0b0f19]"></div>
-            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80">
-              <div class="flex items-center justify-between text-[11px] mb-1">
-                <span class="font-bold text-indigo-300">${a.reason?.includes('💬') ? 'User Chatter' : 'State Transition'}</span>
-                <span class="font-mono text-slate-500">${new Date(a.changed_at).toLocaleString()}</span>
-              </div>
-              <div class="text-xs text-slate-200">${a.reason || 'Status updated'}</div>
+          <div class="relative pl-4 border-l-2 border-slate-200 py-1">
+            <div class="flex items-center gap-2 text-xs">
+              <span class="font-semibold text-slate-800">${a.user_name || 'System'}</span>
+              <span class="text-slate-400 font-mono text-[10px]">${a.changed_at ? new Date(a.changed_at).toLocaleString() : ''}</span>
             </div>
+            <div class="text-xs text-slate-600 mt-0.5">${a.reason || a.notes || 'Status changed'}</div>
           </div>
         `).join('');
       }
     }
 
-    function formatUSD(val: number): string {
-      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
-    }
-
-    function getStatusClass(status: string): string {
-      const map: Record<string, string> = {
-        draft: 'bg-slate-800 text-slate-400 border-slate-700',
-        quotation: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-        confirmed: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-        active: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-        paused: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-        cancelled: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
-        closed: 'bg-slate-800 text-slate-400 border-slate-700',
-      };
-      return map[status?.toLowerCase()] || map.draft;
-    }
-
-    function getInvoiceClass(status: string): string {
-      const map: Record<string, string> = {
-        draft: 'bg-slate-800 text-slate-400 border-slate-700',
-        posted: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-        paid: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-        partially_paid: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-        overdue: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
-        cancelled: 'bg-slate-800 text-slate-400 border-slate-700',
-      };
-      return map[status?.toLowerCase()] || map.draft;
-    }
-
-    // Tab Switching
+    // Tabs toggle
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         document.querySelectorAll('.tab-btn').forEach(b => {
-          b.classList.remove('bg-indigo-600', 'text-white', 'active');
-          b.classList.add('text-slate-400');
+          b.classList.remove('active', 'border-b-2', 'border-[#714B67]', 'text-[#714B67]');
+          b.classList.add('text-slate-500');
         });
         document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
 
         const target = e.currentTarget as HTMLElement;
-        target.classList.add('bg-indigo-600', 'text-white', 'active');
-        target.classList.remove('text-slate-400');
+        target.classList.add('active', 'border-b-2', 'border-[#714B67]', 'text-[#714B67]');
+        target.classList.remove('text-slate-500');
 
         const tabId = target.dataset.tab!;
         document.getElementById(tabId)?.classList.remove('hidden');
       });
     });
 
-    // Chatter Submission
+    // Chatter post
     document.getElementById('btn-post-chatter')?.addEventListener('click', async () => {
       const input = document.getElementById('chatter-input') as HTMLTextAreaElement;
       const text = input.value.trim();
@@ -575,80 +528,62 @@ const { id } = Astro.params;
 
       if (res.data) {
         input.value = '';
-        (window as any).showToast('Chatter Posted', 'Note appended to audit trail', 'success');
         loadSubscription();
       } else {
-        (window as any).showToast('Error', res.error || 'Failed to post', 'error');
+        alert(res.error || 'Failed to post note');
       }
     });
 
-    // Manual Invoice Generation
-    document.getElementById('btn-manual-invoice')?.addEventListener('click', async () => {
-      const res = await apiFetch<any>(`/api/v1/billing/subscriptions/${subId}/invoice`, {
-        method: 'POST',
-      });
-
-      if (res.data) {
-        (window as any).showToast('Invoice Created', `Generated ${res.data.invoice_number}`, 'success');
-        loadSubscription();
-      } else {
-        (window as any).showToast('Notice', res.error || 'Invoice may already exist for this period', 'info');
-      }
-    });
-
-    // Prorated Upgrade Modal Logic
+    // Prorate Modal
     const prorateModal = document.getElementById('prorate-modal')!;
-    const openProrateBtn = document.getElementById('btn-open-prorate-modal')!;
-    const closeProrateBtn = document.getElementById('btn-close-prorate')!;
-    const cancelProrateBtn = document.getElementById('btn-cancel-prorate')!;
+    const btnOpenProrate = document.getElementById('btn-open-prorate-modal')!;
+    const btnCloseProrate = document.getElementById('btn-close-prorate')!;
+    const btnCancelProrate = document.getElementById('btn-cancel-prorate')!;
     const lineSelect = document.getElementById('prorate-line-select') as HTMLSelectElement;
     const currentSeatsInput = document.getElementById('prorate-current-seats') as HTMLInputElement;
     const newSeatsInput = document.getElementById('prorate-new-seats') as HTMLInputElement;
+    const daysRemainingEl = document.getElementById('prorate-days-remaining')!;
+    const addMrrEl = document.getElementById('prorate-additional-mrr')!;
+    const invAmountEl = document.getElementById('prorate-invoice-amount')!;
 
-    openProrateBtn.addEventListener('click', () => {
-      if (!subscriptionData?.lines || subscriptionData.lines.length === 0) return;
+    btnOpenProrate?.addEventListener('click', () => {
+      if (!subscriptionData || !subscriptionData.lines) return;
       lineSelect.innerHTML = subscriptionData.lines.map((l: any) => `
         <option value="${l.id}" data-qty="${l.quantity}" data-price="${l.unit_price}">
           ${l.description} (${l.quantity} seats @ ${formatUSD(l.unit_price)}/mo)
         </option>
       `).join('');
-
-      updateProratePreview();
+      updateProrateCalc();
       prorateModal.classList.remove('hidden');
     });
 
-    function updateProratePreview() {
+    btnCloseProrate?.addEventListener('click', () => prorateModal.classList.add('hidden'));
+    btnCancelProrate?.addEventListener('click', () => prorateModal.classList.add('hidden'));
+
+    lineSelect?.addEventListener('change', updateProrateCalc);
+    newSeatsInput?.addEventListener('input', updateProrateCalc);
+
+    function updateProrateCalc() {
       const opt = lineSelect.selectedOptions[0];
       if (!opt) return;
-      const currentQty = Number(opt.dataset.qty || 1);
+      const curQty = Number(opt.dataset.qty || 1);
       const unitPrice = Number(opt.dataset.price || 0);
-      currentSeatsInput.value = String(currentQty);
+      currentSeatsInput.value = String(curQty);
 
-      const newQty = Math.max(1, Number(newSeatsInput.value || currentQty + 1));
-      const delta = Math.max(0, newQty - currentQty);
-
-      // Remaining days estimate
-      const daysRemaining = 15; // standard mid-cycle
-      const ratio = daysRemaining / 30;
-      const addlMrr = delta * unitPrice;
-      const proratedInvoice = addlMrr * ratio;
-
-      document.getElementById('prorate-additional-mrr')!.textContent = `+${formatUSD(addlMrr)}/mo`;
-      document.getElementById('prorate-invoice-amount')!.textContent = formatUSD(proratedInvoice);
-    }
-
-    lineSelect.addEventListener('change', () => {
-      const opt = lineSelect.selectedOptions[0];
-      if (opt) {
-        newSeatsInput.value = String(Number(opt.dataset.qty || 1) + 5);
-        updateProratePreview();
+      let newQty = Number(newSeatsInput.value);
+      if (newQty <= curQty) {
+        newQty = curQty + 5;
+        newSeatsInput.value = String(newQty);
       }
-    });
 
-    newSeatsInput.addEventListener('input', updateProratePreview);
-
-    closeProrateBtn.addEventListener('click', () => prorateModal.classList.add('hidden'));
-    cancelProrateBtn.addEventListener('click', () => prorateModal.classList.add('hidden'));
+      const delta = newQty - curQty;
+      const days = 15; // default days remaining in cycle
+      daysRemainingEl.textContent = `${days} days`;
+      const addMrr = delta * unitPrice;
+      addMrrEl.textContent = formatUSD(addMrr);
+      const invoiceTotal = (addMrr * (days / 30));
+      invAmountEl.textContent = formatUSD(invoiceTotal);
+    }
 
     document.getElementById('btn-submit-prorate')?.addEventListener('click', async () => {
       const lineId = Number(lineSelect.value);
@@ -661,16 +596,42 @@ const { id } = Astro.params;
 
       if (res.data) {
         prorateModal.classList.add('hidden');
-        (window as any).showToast(
-          'Upgrade Confirmed', 
-          `Prorated Invoice ${res.data.invoice_number || ''} generated for $${res.data.prorated_amount.toFixed(2)}`, 
-          'success'
-        );
+        alert(`✅ Prorated upgrade complete!\nGenerated Invoice: ${res.data.invoice_number}\nProrated Charge: ${formatUSD(res.data.prorated_amount)}`);
         loadSubscription();
       } else {
-        (window as any).showToast('Error', res.error || 'Upgrade failed', 'error');
+        alert(res.error || 'Proration failed');
       }
     });
+
+    function formatUSD(val: number | string | null | undefined): string {
+      const num = Number(val || 0);
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+    }
+
+    function getStatusClass(status: string): string {
+      const map: Record<string, string> = {
+        draft: 'bg-slate-100 text-slate-600 border-slate-200',
+        quotation: 'bg-amber-50 text-amber-700 border-amber-200',
+        confirmed: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+        active: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        paused: 'bg-sky-50 text-sky-700 border-sky-200',
+        cancelled: 'bg-rose-50 text-rose-700 border-rose-200',
+        closed: 'bg-slate-100 text-slate-600 border-slate-200',
+      };
+      return map[status?.toLowerCase()] || map.draft;
+    }
+
+    function getInvoiceClass(status: string): string {
+      const map: Record<string, string> = {
+        draft: 'bg-slate-100 text-slate-600 border-slate-200',
+        posted: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+        paid: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        partially_paid: 'bg-amber-50 text-amber-700 border-amber-200',
+        overdue: 'bg-rose-50 text-rose-700 border-rose-200',
+        cancelled: 'bg-slate-100 text-slate-600 border-slate-200',
+      };
+      return map[status?.toLowerCase()] || map.draft;
+    }
 
     loadSubscription();
   </script>

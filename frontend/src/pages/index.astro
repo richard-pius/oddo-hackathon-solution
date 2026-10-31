@@ -2,37 +2,37 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="Executive Dashboard — Brightloop ERP" activeNav="dashboard">
+<Layout title="Executive Dashboard — Brightloop ERP" activeNav="dashboard" breadcrumbs={[{ label: 'Brightloop ERP', href: '/' }, { label: 'Executive Dashboard' }]}>
   <div class="space-y-6">
-    <!-- Top Welcome & Controls Bar -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+    
+    <!-- Top Action Toolbar & Title -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
       <div>
-        <div class="flex items-center gap-3">
-          <h1 class="text-2xl font-extrabold text-white tracking-tight">Executive Billing Dashboard</h1>
-          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          <span>Executive Billing Dashboard</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
             Real-Time Telemetry
           </span>
-        </div>
-        <p class="text-xs text-slate-400 mt-1">
-          Consolidated financial health, MRR normalization, and zero-double-billing audit telemetry.
+        </h1>
+        <p class="text-xs text-slate-500 mt-0.5">
+          Consolidated recurring revenue metrics, invoice collection health, and zero-double-billing audit.
         </p>
       </div>
 
-      <!-- Action Buttons -->
       <div class="flex items-center gap-2">
         <button 
           id="btn-quick-refresh" 
-          class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium transition-colors shadow-2xs"
         >
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
           </svg>
-          <span>Refresh Metrics</span>
+          <span>Refresh</span>
         </button>
 
         <a 
           href="/subscriptions/new" 
-          class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-all shadow-md shadow-indigo-600/30"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#714B67] hover:bg-[#5a3c53] text-white text-xs font-semibold transition-colors shadow-xs"
         >
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -42,210 +42,207 @@ import Layout from '../layouts/Layout.astro';
       </div>
     </div>
 
-    <!-- 4 Main KPI Cards -->
+    <!-- 4 High-Density Key Metrics Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      
       <!-- MRR Card -->
-      <div class="rounded-2xl bg-gradient-to-b from-slate-900 to-[#0e1626] border border-slate-800 p-5 shadow-lg relative overflow-hidden group hover:border-indigo-500/50 transition-all">
-        <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-all"></div>
-        <div class="flex items-center justify-between text-slate-400 mb-2">
-          <span class="text-xs font-bold uppercase tracking-wider">Monthly Recurring Revenue</span>
-          <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-          </div>
+      <div class="bg-white border border-slate-200 rounded-md p-4 shadow-xs">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-semibold uppercase tracking-wider">Monthly Recurring (MRR)</span>
+          <svg class="w-4 h-4 text-[#714B67]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+          </svg>
         </div>
-        <div class="text-3xl font-extrabold text-white tracking-tight" id="kpi-mrr">$0.00</div>
-        <div class="flex items-center gap-1.5 mt-2 text-[11px] text-emerald-400 font-semibold">
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
-          <span>Normalized forward-committed</span>
+        <div class="text-2xl font-bold text-slate-900 tracking-tight" id="kpi-mrr">$0.00</div>
+        <div class="flex items-center gap-1.5 mt-2 text-[11px] text-emerald-700 font-medium">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+          <span>Forward-committed run rate</span>
         </div>
       </div>
 
       <!-- ARR Card -->
-      <div class="rounded-2xl bg-gradient-to-b from-slate-900 to-[#0e1626] border border-slate-800 p-5 shadow-lg relative overflow-hidden group hover:border-cyan-500/50 transition-all">
-        <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-500/20 transition-all"></div>
-        <div class="flex items-center justify-between text-slate-400 mb-2">
-          <span class="text-xs font-bold uppercase tracking-wider">Annualized Run-Rate (ARR)</span>
-          <div class="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-          </div>
+      <div class="bg-white border border-slate-200 rounded-md p-4 shadow-xs">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-semibold uppercase tracking-wider">Annualized Run-Rate (ARR)</span>
+          <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
         </div>
-        <div class="text-3xl font-extrabold text-white tracking-tight" id="kpi-arr">$0.00</div>
-        <div class="flex items-center gap-1.5 mt-2 text-[11px] text-slate-400">
-          <span>MRR &times; 12 run-rate baseline</span>
+        <div class="text-2xl font-bold text-slate-900 tracking-tight" id="kpi-arr">$0.00</div>
+        <div class="flex items-center gap-1.5 mt-2 text-[11px] text-slate-500 font-medium">
+          <span>MRR &times; 12 baseline</span>
         </div>
       </div>
 
-      <!-- Active Subscriptions -->
-      <div class="rounded-2xl bg-gradient-to-b from-slate-900 to-[#0e1626] border border-slate-800 p-5 shadow-lg relative overflow-hidden group hover:border-emerald-500/50 transition-all">
-        <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all"></div>
-        <div class="flex items-center justify-between text-slate-400 mb-2">
-          <span class="text-xs font-bold uppercase tracking-wider">Active Subscriptions</span>
-          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-          </div>
+      <!-- Active Contracts Card -->
+      <div class="bg-white border border-slate-200 rounded-md p-4 shadow-xs">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-semibold uppercase tracking-wider">Active Subscriptions</span>
+          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+          </svg>
         </div>
-        <div class="text-3xl font-extrabold text-white tracking-tight" id="kpi-active-subs">0</div>
-        <div class="flex items-center gap-1.5 mt-2 text-[11px] text-emerald-400">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <div class="text-2xl font-bold text-slate-900 tracking-tight" id="kpi-active-subs">0</div>
+        <div class="flex items-center gap-1.5 mt-2 text-[11px] text-emerald-700 font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
           <span>Zero churn risk state</span>
         </div>
       </div>
 
-      <!-- Outstanding Receivables / Overdue Aging -->
-      <div class="rounded-2xl bg-gradient-to-b from-slate-900 to-[#0e1626] border border-slate-800 p-5 shadow-lg relative overflow-hidden group hover:border-amber-500/50 transition-all">
-        <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-all"></div>
-        <div class="flex items-center justify-between text-slate-400 mb-2">
-          <span class="text-xs font-bold uppercase tracking-wider">Uncollected Receivables</span>
-          <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-          </div>
+      <!-- Outstanding Receivables Card -->
+      <div class="bg-white border border-slate-200 rounded-md p-4 shadow-xs">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-semibold uppercase tracking-wider">Uncollected Receivables</span>
+          <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
         </div>
-        <div class="text-3xl font-extrabold text-amber-300 tracking-tight" id="kpi-outstanding">$0.00</div>
-        <div class="flex items-center justify-between mt-2 text-[11px]">
-          <span class="text-slate-400">Overdue Invoices:</span>
-          <span class="font-bold text-amber-400 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20" id="kpi-overdue-count">0</span>
+        <div class="text-2xl font-bold text-amber-700 tracking-tight" id="kpi-outstanding">$0.00</div>
+        <div class="flex items-center justify-between mt-2 text-[11px] text-slate-500">
+          <span>Overdue Count:</span>
+          <span class="font-bold text-amber-700 px-1.5 py-0.2 rounded bg-amber-50 border border-amber-200 font-mono" id="kpi-overdue-count">0</span>
         </div>
       </div>
+
     </div>
 
-    <!-- Secondary Telemetry Row: Revenue Breakdown & Real-Time SSE Stream Box -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Revenue & Dunning Health Card -->
-      <div class="lg:col-span-1 rounded-2xl bg-slate-900/90 border border-slate-800 p-5 shadow-lg flex flex-col justify-between">
+    <!-- Secondary Operations Strip: Health & Real-Time SSE Ticker -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      
+      <!-- Operations Invariant Specs -->
+      <div class="bg-white border border-slate-200 rounded-md p-4 shadow-xs flex flex-col justify-between">
         <div>
-          <h2 class="font-bold text-white text-sm flex items-center gap-2 mb-4">
-            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            Billing Health & Collections
+          <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-[#714B67]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <span>Billing Guard & Invariants</span>
           </h2>
 
-          <div class="space-y-3 font-mono text-xs">
-            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800/80">
-              <span class="text-slate-400">Total Payments Reconciled:</span>
-              <span class="font-bold text-emerald-400" id="kpi-total-revenue">$0.00</span>
+          <div class="space-y-2 text-xs">
+            <div class="flex items-center justify-between py-1.5 px-2.5 rounded bg-slate-50 border border-slate-100">
+              <span class="text-slate-600 font-medium">Reconciled Payments:</span>
+              <span class="font-bold text-emerald-700 font-mono" id="kpi-total-revenue">$0.00</span>
             </div>
 
-            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800/80">
-              <span class="text-slate-400">Pending Draft Invoices:</span>
-              <span class="font-bold text-indigo-400" id="kpi-draft-invoices">0</span>
+            <div class="flex items-center justify-between py-1.5 px-2.5 rounded bg-slate-50 border border-slate-100">
+              <span class="text-slate-600 font-medium">Draft Pending Invoices:</span>
+              <span class="font-bold text-indigo-700 font-mono" id="kpi-draft-invoices">0</span>
             </div>
 
-            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800/80">
-              <span class="text-slate-400">Automated Retry Sequence:</span>
-              <span class="font-bold text-emerald-300">Days 1, 3, 5, 7</span>
+            <div class="flex items-center justify-between py-1.5 px-2.5 rounded bg-slate-50 border border-slate-100">
+              <span class="text-slate-600 font-medium">Dunning Cadence:</span>
+              <span class="font-semibold text-slate-800">Days 1, 3, 5, 7</span>
             </div>
 
-            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800/80">
-              <span class="text-slate-400">Concurrency Guard:</span>
-              <span class="font-bold text-indigo-300">SKIP LOCKED</span>
+            <div class="flex items-center justify-between py-1.5 px-2.5 rounded bg-slate-50 border border-slate-100">
+              <span class="text-slate-600 font-medium">Concurrency Lock:</span>
+              <span class="font-mono font-bold text-[#714B67]">SKIP LOCKED</span>
             </div>
           </div>
         </div>
 
-        <div class="mt-4 pt-4 border-t border-slate-800 text-[11px] text-slate-400">
-          The nightly cron executes at 00:05 UTC. It uses database-level row locking to prevent duplicate invoices across all worker replicas.
+        <div class="mt-3 pt-3 border-t border-slate-100 text-[11px] text-slate-500 leading-tight">
+          Nightly batch executes at 00:05 UTC. Database row-locks guarantee zero double-billings.
         </div>
       </div>
 
-      <!-- Real-Time SSE Event Stream Telemetry -->
-      <div class="lg:col-span-2 rounded-2xl bg-slate-900/90 border border-slate-800 p-5 shadow-lg flex flex-col">
-        <div class="flex items-center justify-between mb-3">
+      <!-- Real-Time SSE Telemetry -->
+      <div class="lg:col-span-2 bg-white border border-slate-200 rounded-md p-4 shadow-xs flex flex-col">
+        <div class="flex items-center justify-between mb-2">
           <div class="flex items-center gap-2">
-            <h2 class="font-bold text-white text-sm">Server-Sent Events (SSE) Live Feed</h2>
-            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 animate-pulse">
-              STREAM ACTIVE
+            <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider">
+              Server-Sent Events (SSE) Live Feed
+            </h2>
+            <span class="px-2 py-0.2 rounded text-[10px] font-mono font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              CONNECTED
             </span>
           </div>
-          <button 
-            id="btn-simulate-event" 
-            class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition-colors"
-          >
-            + Test Broadcast Ping
-          </button>
+          <span class="text-[11px] text-slate-400 font-mono">/api/v1/stream/events</span>
         </div>
 
-        <!-- Terminal-like stream display -->
+        <!-- Terminal log box -->
         <div 
           id="dashboard-sse-log" 
-          class="flex-1 bg-[#070b13] border border-slate-800 rounded-xl p-3 font-mono text-xs text-slate-300 space-y-1.5 overflow-y-auto max-h-56"
+          class="flex-1 bg-slate-900 border border-slate-800 rounded p-2.5 font-mono text-[11px] text-slate-300 space-y-1 overflow-y-auto max-h-44"
         >
-          <div class="text-slate-400 italic">// Establishing persistent HTTP stream to /api/v1/stream/events...</div>
+          <div class="text-slate-500">// Stream listening for payments, transitions, and invoices...</div>
         </div>
       </div>
+
     </div>
 
-    <!-- Active Subscriptions Table -->
-    <div class="rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl overflow-hidden">
-      <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+    <!-- Subscriptions Ledger Grid -->
+    <div class="bg-white border border-slate-200 rounded-md shadow-xs overflow-hidden">
+      <div class="p-3.5 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
         <div>
-          <h2 class="font-bold text-white text-base">Key Subscriptions Ledger</h2>
-          <p class="text-xs text-slate-400">Active contracts with real-time billing state machine tracking.</p>
+          <h2 class="font-bold text-slate-900 text-sm">Key Subscriptions Ledger</h2>
+          <p class="text-xs text-slate-500">Live contracts with Odoo state machine tracking.</p>
         </div>
-        <a href="/subscriptions" class="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
-          <span>View All Subscriptions</span>
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        <a href="/subscriptions" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+          <span>All Subscriptions &rarr;</span>
         </a>
       </div>
 
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs text-slate-300">
-          <thead class="bg-slate-950/70 border-b border-slate-800 font-bold uppercase tracking-wider text-[10px] text-slate-400">
+        <table class="erp-table">
+          <thead>
             <tr>
-              <th class="py-3 px-4">Subscription #</th>
-              <th class="py-3 px-4">Customer</th>
-              <th class="py-3 px-4">Plan / Interval</th>
-              <th class="py-3 px-4">Recurring Value</th>
-              <th class="py-3 px-4">Next Billing Date</th>
-              <th class="py-3 px-4">State</th>
-              <th class="py-3 px-4 text-right">Action</th>
+              <th>Subscription #</th>
+              <th>Customer</th>
+              <th>Plan</th>
+              <th>Recurring Total</th>
+              <th>Next Billing</th>
+              <th>Status</th>
+              <th class="text-right">Action</th>
             </tr>
           </thead>
-          <tbody id="subs-table-body" class="divide-y divide-slate-800/60 font-medium">
+          <tbody id="subs-table-body">
             <tr>
-              <td colspan="7" class="py-8 text-center text-slate-400">Loading subscriptions...</td>
+              <td colspan="7" class="py-6 text-center text-slate-400 text-xs">Loading subscriptions ledger...</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- Recent Invoices Table -->
-    <div class="rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl overflow-hidden">
-      <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+    <!-- Recent Invoices Ledger Grid -->
+    <div class="bg-white border border-slate-200 rounded-md shadow-xs overflow-hidden">
+      <div class="p-3.5 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
         <div>
-          <h2 class="font-bold text-white text-base">Recent Invoices & Receivables</h2>
-          <p class="text-xs text-slate-400">Idempotently generated invoices with direct PDF download.</p>
+          <h2 class="font-bold text-slate-900 text-sm">Recent Invoices & Receivables</h2>
+          <p class="text-xs text-slate-500">Automated invoices with downloadable ReportLab vector PDF.</p>
         </div>
-        <a href="/invoices" class="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
-          <span>View All Invoices</span>
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        <a href="/invoices" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+          <span>All Invoices &rarr;</span>
         </a>
       </div>
 
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs text-slate-300">
-          <thead class="bg-slate-950/70 border-b border-slate-800 font-bold uppercase tracking-wider text-[10px] text-slate-400">
+        <table class="erp-table">
+          <thead>
             <tr>
-              <th class="py-3 px-4">Invoice #</th>
-              <th class="py-3 px-4">Customer</th>
-              <th class="py-3 px-4">Issue Date</th>
-              <th class="py-3 px-4">Due Date</th>
-              <th class="py-3 px-4">Total Amount</th>
-              <th class="py-3 px-4">Due Balance</th>
-              <th class="py-3 px-4">Status</th>
-              <th class="py-3 px-4 text-right">PDF / Pay</th>
+              <th>Invoice #</th>
+              <th>Customer</th>
+              <th>Issue Date</th>
+              <th>Due Date</th>
+              <th>Total Amount</th>
+              <th>Due Balance</th>
+              <th>Status</th>
+              <th class="text-right">PDF / Pay</th>
             </tr>
           </thead>
-          <tbody id="invoices-table-body" class="divide-y divide-slate-800/60 font-medium">
+          <tbody id="invoices-table-body">
             <tr>
-              <td colspan="8" class="py-8 text-center text-slate-400">Loading invoices...</td>
+              <td colspan="8" class="py-6 text-center text-slate-400 text-xs">Loading invoices ledger...</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+
   </div>
 
-  <!-- Dashboard Client Logic -->
   <script>
     import { apiFetch, API_URL } from '../lib/api';
 
@@ -276,26 +273,26 @@ import Layout from '../layouts/Layout.astro';
       const subsBody = document.getElementById('subs-table-body');
       if (subsBody && subsRes.data?.items) {
         if (subsRes.data.items.length === 0) {
-          subsBody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-slate-400">No subscriptions found. Click "New Quotation" to create one.</td></tr>';
+          subsBody.innerHTML = '<tr><td colspan="7" class="py-6 text-center text-slate-400 text-xs">No subscriptions found. Click "New Quotation" to create one.</td></tr>';
         } else {
           subsBody.innerHTML = subsRes.data.items.map((sub: any) => `
-            <tr class="hover:bg-slate-800/40 transition-colors">
-              <td class="py-3 px-4 font-mono font-bold text-white">
-                <a href="/subscriptions/${sub.id}" class="hover:text-indigo-400 underline decoration-indigo-500/40">
+            <tr>
+              <td class="font-mono font-bold text-slate-900">
+                <a href="/subscriptions/${sub.id}" class="hover:text-[#714B67] underline decoration-slate-300">
                   ${sub.subscription_number}
                 </a>
               </td>
-              <td class="py-3 px-4 font-semibold text-slate-200">${sub.customer_name || 'Customer #' + sub.customer_id}</td>
-              <td class="py-3 px-4">
-                <span class="px-2 py-0.5 rounded text-[11px] bg-slate-800 text-slate-300 font-mono">${sub.plan_name || 'Standard'}</span>
+              <td class="font-medium text-slate-800">${sub.customer_name || 'Customer #' + sub.customer_id}</td>
+              <td>
+                <span class="px-1.5 py-0.5 rounded text-[11px] bg-slate-100 text-slate-700 font-mono border border-slate-200">${sub.plan_name || 'Standard'}</span>
               </td>
-              <td class="py-3 px-4 font-mono font-bold text-emerald-400">${formatUSD(sub.total_recurring)}</td>
-              <td class="py-3 px-4 font-mono text-slate-400">${sub.next_billing_date || 'N/A'}</td>
-              <td class="py-3 px-4">
+              <td class="font-mono font-bold text-slate-900">${formatUSD(sub.total_recurring)}</td>
+              <td class="font-mono text-slate-600">${sub.next_billing_date || 'N/A'}</td>
+              <td>
                 ${getStatusBadge(sub.status)}
               </td>
-              <td class="py-3 px-4 text-right">
-                <a href="/subscriptions/${sub.id}" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 font-semibold text-[11px] border border-slate-700">
+              <td class="text-right">
+                <a href="/subscriptions/${sub.id}" class="px-2 py-1 rounded bg-white hover:bg-slate-50 text-[#714B67] font-semibold text-[11px] border border-slate-300 shadow-2xs">
                   Manage
                 </a>
               </td>
@@ -309,30 +306,32 @@ import Layout from '../layouts/Layout.astro';
       const invBody = document.getElementById('invoices-table-body');
       if (invBody && invsRes.data?.items) {
         if (invsRes.data.items.length === 0) {
-          invBody.innerHTML = '<tr><td colspan="8" class="py-8 text-center text-slate-400">No invoices yet. Run the nightly batch billing to generate them.</td></tr>';
+          invBody.innerHTML = '<tr><td colspan="8" class="py-6 text-center text-slate-400 text-xs">No invoices yet.</td></tr>';
         } else {
           invBody.innerHTML = invsRes.data.items.map((inv: any) => `
-            <tr class="hover:bg-slate-800/40 transition-colors">
-              <td class="py-3 px-4 font-mono font-bold text-white">
-                <a href="/invoices/${inv.id}" class="hover:text-indigo-400 underline decoration-indigo-500/40">
+            <tr>
+              <td class="font-mono font-bold text-slate-900">
+                <a href="/invoices/${inv.id}" class="hover:text-[#714B67] underline decoration-slate-300">
                   ${inv.invoice_number}
                 </a>
               </td>
-              <td class="py-3 px-4 font-semibold text-slate-200">${inv.customer_name || 'Customer #' + inv.customer_id}</td>
-              <td class="py-3 px-4 font-mono text-slate-400">${inv.issue_date}</td>
-              <td class="py-3 px-4 font-mono text-slate-400">${inv.due_date}</td>
-              <td class="py-3 px-4 font-mono font-bold text-slate-100">${formatUSD(inv.total_amount)}</td>
-              <td class="py-3 px-4 font-mono font-bold ${inv.amount_due > 0 ? 'text-amber-400' : 'text-slate-400'}">${formatUSD(inv.amount_due)}</td>
-              <td class="py-3 px-4">
+              <td class="font-medium text-slate-800">${inv.customer_name || 'Customer #' + inv.customer_id}</td>
+              <td class="font-mono text-slate-600">${inv.issue_date}</td>
+              <td class="font-mono text-slate-600">${inv.due_date}</td>
+              <td class="font-mono font-bold text-slate-900">${formatUSD(inv.total_amount)}</td>
+              <td class="font-mono font-bold ${inv.amount_due > 0 ? 'text-amber-700' : 'text-slate-600'}">${formatUSD(inv.amount_due)}</td>
+              <td>
                 ${getInvoiceStatusBadge(inv.status)}
               </td>
-              <td class="py-3 px-4 text-right flex items-center justify-end gap-2">
-                <a href="${API_URL}/api/v1/billing/invoices/${inv.id}/pdf" target="_blank" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-[11px] border border-slate-700" title="Download ReportLab PDF">
-                  PDF
-                </a>
-                <a href="/invoices/${inv.id}" class="px-2 py-1 rounded bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 font-semibold text-[11px] border border-indigo-500/30">
-                  View
-                </a>
+              <td class="text-right">
+                <div class="inline-flex items-center gap-1.5">
+                  <a href="${API_URL}/api/v1/billing/invoices/${inv.id}/pdf" target="_blank" class="px-2 py-0.5 rounded bg-white hover:bg-slate-50 text-slate-700 font-medium text-[11px] border border-slate-300 shadow-2xs">
+                    PDF
+                  </a>
+                  <a href="/invoices/${inv.id}" class="px-2 py-0.5 rounded bg-[#714B67] hover:bg-[#5a3c53] text-white font-semibold text-[11px] shadow-2xs">
+                    View
+                  </a>
+                </div>
               </td>
             </tr>
           `).join('');
@@ -347,60 +346,33 @@ import Layout from '../layouts/Layout.astro';
 
     function getStatusBadge(status: string): string {
       const map: Record<string, string> = {
-        draft: 'bg-slate-800 text-slate-400 border-slate-700',
-        quotation: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-        confirmed: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-        active: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-        paused: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-        cancelled: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
-        closed: 'bg-slate-800 text-slate-400 border-slate-700',
+        draft: 'bg-slate-100 text-slate-600 border-slate-200',
+        quotation: 'bg-amber-50 text-amber-700 border-amber-200',
+        confirmed: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+        active: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        paused: 'bg-sky-50 text-sky-700 border-sky-200',
+        cancelled: 'bg-rose-50 text-rose-700 border-rose-200',
+        closed: 'bg-slate-100 text-slate-600 border-slate-200',
       };
       const cls = map[status.toLowerCase()] || map.draft;
-      return `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${cls}">${status}</span>`;
+      return `<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${cls}">${status}</span>`;
     }
 
     function getInvoiceStatusBadge(status: string): string {
       const map: Record<string, string> = {
-        draft: 'bg-slate-800 text-slate-400 border-slate-700',
-        posted: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-        paid: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-        partially_paid: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-        overdue: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
-        cancelled: 'bg-slate-800 text-slate-400 border-slate-700',
+        draft: 'bg-slate-100 text-slate-600 border-slate-200',
+        posted: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+        paid: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        partially_paid: 'bg-amber-50 text-amber-700 border-amber-200',
+        overdue: 'bg-rose-50 text-rose-700 border-rose-200',
+        cancelled: 'bg-slate-100 text-slate-600 border-slate-200',
       };
       const cls = map[status.toLowerCase()] || map.draft;
-      return `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${cls}">${status.replace('_', ' ')}</span>`;
+      return `<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${cls}">${status.replace('_', ' ')}</span>`;
     }
 
-    // Handle SSE events arriving at window
-    window.addEventListener('brightloop:sse', (e: any) => {
-      const payload = e.detail;
-      const logBox = document.getElementById('dashboard-sse-log');
-      if (logBox) {
-        const row = document.createElement('div');
-        row.className = 'text-[11px] font-mono leading-relaxed border-b border-slate-800/60 pb-1';
-        const time = new Date().toLocaleTimeString();
-        row.innerHTML = `<span class="text-indigo-400">[${time}]</span> <span class="text-cyan-300 font-bold">${payload.event || 'EVENT'}</span>: <span class="text-white">${payload.detail || payload.message || JSON.stringify(payload)}</span>`;
-        logBox.prepend(row);
-        while (logBox.children.length > 20) logBox.removeChild(logBox.lastChild!);
-      }
-
-      // Re-query metrics when events happen
-      loadDashboardData();
-    });
-
-    // Quick refresh button
-    document.getElementById('btn-quick-refresh')?.addEventListener('click', () => {
-      loadDashboardData();
-      (window as any).showToast('Telemetry Updated', 'Dashboard KPIs refreshed from database', 'info');
-    });
-
-    // Simulate event button
-    document.getElementById('btn-simulate-event')?.addEventListener('click', async () => {
-      // Trigger a test broadcast
-      await apiFetch<any>('/api/v1/payments/test-broadcast', { method: 'POST' }).catch(() => {});
-      (window as any).showToast('Ping Broadcast', 'Pushed live telemetry message to SSE listeners', 'info');
-    });
+    // Refresh button
+    document.getElementById('btn-quick-refresh')?.addEventListener('click', loadDashboardData);
 
     // Initial load
     loadDashboardData();

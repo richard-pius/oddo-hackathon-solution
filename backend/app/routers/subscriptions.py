@@ -284,9 +284,20 @@ async def create_from_template(
 async def get_audit_trail(
     subscription_id: int,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(require_staff_or_admin),
+    user: User = Depends(get_current_user),
 ):
-    from app.models import SubscriptionAudit
+    """
+    Retrieve audit trail for a subscription.
+    Staff/Admin can view any; Customers can only view their own contract audit.
+    """
+    from app.models import SubscriptionAudit, Subscription
+    sub = await db.get(Subscription, subscription_id)
+    if not sub:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+
+    if user.role == UserRole.CUSTOMER and sub.customer_id != user.id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
     result = await db.execute(
         select(SubscriptionAudit)
         .where(SubscriptionAudit.subscription_id == subscription_id)
@@ -304,13 +315,17 @@ async def post_chatter_message(
     subscription_id: int,
     data: ChatterMessage,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(require_staff_or_admin),
+    user: User = Depends(get_current_user),
 ):
     """Posts a message to the subscription chatter / audit feed."""
     from app.models import SubscriptionAudit, Subscription
     sub = await db.get(Subscription, subscription_id)
     if not sub:
         raise HTTPException(status_code=404, detail="Subscription not found")
+
+    # Strict isolation: customer can only comment on their own contract
+    if user.role == UserRole.CUSTOMER and sub.customer_id != user.id:
+        raise HTTPException(status_code=403, detail="Access denied")
 
     audit = SubscriptionAudit(
         subscription_id=subscription_id,
@@ -342,11 +357,12 @@ async def prorate_subscription_upgrade(
     subscription_id: int,
     data: ProrateUpgradeRequest,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(require_staff_or_admin),
+    user: User = Depends(get_current_user),
 ):
     """
     Odoo-grade prorated seat upgrade.
     Calculates remaining cycle days and generates an immediate prorated invoice.
+    Strict tenant check: customer can only prorate their own subscription.
     """
     from decimal import Decimal
     from datetime import date, timedelta
@@ -362,6 +378,10 @@ async def prorate_subscription_upgrade(
     sub = result.scalar_one_or_none()
     if not sub:
         raise HTTPException(status_code=404, detail="Subscription not found")
+
+    # Strict tenant isolation
+    if user.role == UserRole.CUSTOMER and sub.customer_id != user.id:
+        raise HTTPException(status_code=403, detail="Access denied")
 
     line = next((l for l in sub.lines if l.id == data.line_id), None)
     if not line:

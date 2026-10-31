@@ -2,142 +2,138 @@
 import Layout from '../../layouts/Layout.astro';
 ---
 
-<Layout title="Invoices & Billing — Brightloop ERP" activeNav="invoices">
-  <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+<Layout title="Invoices & Billing — Brightloop ERP" activeNav="invoices" breadcrumbs={[{ label: 'Brightloop ERP', href: '/' }, { label: 'Invoices' }]}>
+  <div class="space-y-4">
+    
+    <!-- Top Action Toolbar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
       <div>
-        <div class="flex items-center gap-3">
-          <h1 class="text-2xl font-extrabold text-white tracking-tight">Invoices & Billing Ledger</h1>
-          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" id="invoices-count-badge">
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          <span>Invoices & Billing Ledger</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-slate-100 text-slate-700 border border-slate-200" id="invoices-count-badge">
             ... Invoices
           </span>
-        </div>
-        <p class="text-xs text-slate-400 mt-1">
-          Idempotent recurring billing, PDF invoice generation, dunning aging reports, and payment reconciliation.
+        </h1>
+        <p class="text-xs text-slate-500 mt-0.5">
+          Idempotent recurring billing, ReportLab vector PDF generation, dunning aging reports, and payment reconciliation.
         </p>
       </div>
 
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
         <button 
           id="btn-trigger-batch-billing-page" 
-          class="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-lg shadow-indigo-600/30"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#714B67] hover:bg-[#5a3c53] text-white text-xs font-semibold transition-colors shadow-xs"
         >
-          <svg class="w-4 h-4 animate-spin-reverse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
           <span>Run Nightly Billing Batch</span>
         </button>
       </div>
     </div>
 
     <!-- Filter & Search Toolbar -->
-    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-2xl border border-slate-800">
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-2.5 rounded-md border border-slate-200 shadow-2xs">
       <div class="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0" id="inv-status-tabs">
-        <button class="inv-tab-btn active px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition-colors" data-status="">
+        <button class="inv-tab-btn active px-2.5 py-1 rounded text-xs font-semibold bg-[#714B67] text-white transition-colors" data-status="">
           All Invoices
         </button>
-        <button class="inv-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors" data-status="confirmed">
+        <button class="inv-tab-btn px-2.5 py-1 rounded text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors" data-status="confirmed">
           Posted / Due
         </button>
-        <button class="inv-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors" data-status="paid">
+        <button class="inv-tab-btn px-2.5 py-1 rounded text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors" data-status="paid">
           Paid
         </button>
-        <button class="inv-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors" data-status="overdue">
+        <button class="inv-tab-btn px-2.5 py-1 rounded text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors" data-status="overdue">
           Overdue Aging
         </button>
-        <button class="inv-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors" data-status="draft">
+        <button class="inv-tab-btn px-2.5 py-1 rounded text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors" data-status="draft">
           Draft
         </button>
       </div>
 
-      <div class="relative w-full sm:w-64">
+      <div class="relative w-full sm:w-60">
         <input 
           type="text" 
           id="inv-search" 
-          placeholder="Filter by invoice # or customer..." 
-          class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+          placeholder="Filter invoices..." 
+          class="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#714B67]"
         />
-        <svg class="w-3.5 h-3.5 text-slate-500 absolute right-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        <svg class="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
       </div>
     </div>
 
-    <!-- Invoices Table -->
-    <div class="rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl overflow-hidden">
+    <!-- Invoices Table Grid -->
+    <div class="bg-white border border-slate-200 rounded-md shadow-xs overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs text-slate-300">
-          <thead class="bg-slate-950/70 border-b border-slate-800 font-bold uppercase tracking-wider text-[10px] text-slate-400">
+        <table class="erp-table">
+          <thead>
             <tr>
-              <th class="py-3 px-4">Invoice #</th>
-              <th class="py-3 px-4">Customer</th>
-              <th class="py-3 px-4">Subscription</th>
-              <th class="py-3 px-4">Issue Date</th>
-              <th class="py-3 px-4">Due Date</th>
-              <th class="py-3 px-4">Total Amount</th>
-              <th class="py-3 px-4">Due Balance</th>
-              <th class="py-3 px-4">Status</th>
-              <th class="py-3 px-4 text-right">Actions</th>
+              <th>Invoice #</th>
+              <th>Customer</th>
+              <th>Subscription</th>
+              <th>Issue Date</th>
+              <th>Due Date</th>
+              <th>Total Amount</th>
+              <th>Due Balance</th>
+              <th>Status</th>
+              <th class="text-right">Actions</th>
             </tr>
           </thead>
-          <tbody id="invoices-table" class="divide-y divide-slate-800/60 font-medium">
+          <tbody id="invoices-table">
             <tr>
-              <td colspan="9" class="py-12 text-center text-slate-400">Loading invoices ledger...</td>
+              <td colspan="9" class="py-8 text-center text-slate-400 text-xs">Loading invoices ledger...</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div class="p-4 border-t border-slate-800 bg-slate-950/40 flex items-center justify-between text-xs text-slate-400">
-        <span id="inv-page-info">Showing 0 invoices</span>
-        <div class="flex items-center gap-2">
-          <button id="inv-prev" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 disabled:opacity-40" disabled>Previous</button>
-          <button id="inv-next" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 disabled:opacity-40" disabled>Next</button>
+      <div class="p-3 border-t border-slate-200 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500">
+        <span id="inv-page-info">Showing invoices</span>
+        <div class="flex items-center gap-1.5">
+          <button id="inv-prev" class="px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium disabled:opacity-40" disabled>Previous</button>
+          <button id="inv-next" class="px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium disabled:opacity-40" disabled>Next</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Record Payment Modal -->
-  <div id="payment-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-sm">
-            $
-          </div>
-          <div>
-            <h3 class="font-bold text-white text-base">Record Payment</h3>
-            <p class="text-xs text-slate-400">Auto-reconciles invoice when balance hits $0.00</p>
-          </div>
+  <div id="payment-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 rounded-md p-5 max-w-md w-full shadow-lg space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+        <div>
+          <h3 class="font-bold text-slate-900 text-sm">Record Payment</h3>
+          <p class="text-xs text-slate-500">Auto-reconciles invoice when balance hits $0.00</p>
         </div>
-        <button id="btn-close-payment-modal" class="text-slate-400 hover:text-white p-1">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        <button id="btn-close-payment-modal" class="text-slate-400 hover:text-slate-600 p-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
       </div>
 
-      <div class="space-y-4 text-xs">
-        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-          <div class="flex justify-between text-slate-400 mb-1">
+      <div class="space-y-3 text-xs">
+        <div class="bg-slate-50 p-2.5 rounded border border-slate-200">
+          <div class="flex justify-between text-slate-600 mb-0.5">
             <span>Invoice:</span>
-            <span class="font-mono text-white font-bold" id="pay-inv-number">INV-...</span>
+            <span class="font-mono text-slate-900 font-bold" id="pay-inv-number">INV-...</span>
           </div>
-          <div class="flex justify-between text-slate-400">
+          <div class="flex justify-between text-slate-600">
             <span>Outstanding Balance:</span>
-            <span class="font-mono text-amber-400 font-bold" id="pay-inv-balance">$0.00</span>
+            <span class="font-mono text-amber-700 font-bold" id="pay-inv-balance">$0.00</span>
           </div>
         </div>
 
         <div>
-          <label class="block font-bold text-slate-300 mb-1">Payment Amount ($)</label>
+          <label class="block font-semibold text-slate-700 mb-1">Payment Amount ($)</label>
           <input 
             type="number" 
             step="0.01" 
             id="pay-amount" 
-            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 font-mono text-white text-sm font-bold focus:outline-none focus:border-emerald-500" 
+            class="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 font-mono text-slate-900 text-sm font-bold focus:outline-none focus:ring-1 focus:ring-[#714B67]" 
           />
         </div>
 
         <div>
-          <label class="block font-bold text-slate-300 mb-1">Payment Method</label>
-          <select id="pay-method" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500">
+          <label class="block font-semibold text-slate-700 mb-1">Payment Method</label>
+          <select id="pay-method" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#714B67]">
             <option value="credit_card">Credit Card (Stripe Gateway)</option>
             <option value="bank_transfer">Wire / ACH Bank Transfer</option>
             <option value="stripe">Stripe Checkout / Webhook</option>
@@ -147,21 +143,21 @@ import Layout from '../../layouts/Layout.astro';
         </div>
 
         <div>
-          <label class="block font-bold text-slate-300 mb-1">Payment Reference / Transaction ID</label>
+          <label class="block font-semibold text-slate-700 mb-1">Payment Reference / Transaction ID</label>
           <input 
             type="text" 
             id="pay-reference" 
             placeholder="e.g. TXN-STRIPE-89123 or Wire Ref #4412" 
-            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" 
+            class="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#714B67]" 
           />
         </div>
       </div>
 
-      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
-        <button id="btn-cancel-pay" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <button id="btn-cancel-pay" class="px-3 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium">
           Cancel
         </button>
-        <button id="btn-submit-payment" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/30">
+        <button id="btn-submit-payment" class="px-3.5 py-1 rounded bg-[#714B67] hover:bg-[#5a3c53] text-white text-xs font-semibold shadow-xs">
           Reconcile Payment
         </button>
       </div>
@@ -173,88 +169,87 @@ import Layout from '../../layouts/Layout.astro';
 
     let currentStatus = '';
     let searchQuery = '';
-    let currentPage = 1;
-    const pageSize = 15;
+    let cursor = 0;
+    const limit = 25;
     let selectedInvoiceForPayment: any = null;
 
     async function fetchInvoices() {
       const table = document.getElementById('invoices-table');
       if (table) {
-        table.innerHTML = '<tr><td colspan="9" class="py-12 text-center text-slate-400">Loading invoices...</td></tr>';
+        table.innerHTML = '<tr><td colspan="9" class="py-6 text-center text-slate-400 text-xs">Loading invoices...</td></tr>';
       }
 
-      let url = `/api/v1/billing/invoices?page=${currentPage}&limit=${pageSize}`;
-      if (currentStatus) url += `&status=${currentStatus}`;
+      let url = `/api/v1/billing/invoices?limit=${limit}`;
+      if (cursor > 0) url += `&cursor=${cursor}`;
+      if (currentStatus) url += `&status_filter=${currentStatus}`;
 
       const res = await apiFetch<any>(url);
       if (!res.data || !res.data.items) {
-        if (table) table.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-rose-400">Error: ${res.error || 'Failed to load'}</td></tr>`;
+        if (table) table.innerHTML = `<tr><td colspan="9" class="py-6 text-center text-rose-600 text-xs">Error: ${res.error || 'Failed to load'}</td></tr>`;
         return;
       }
 
       const totalBadge = document.getElementById('invoices-count-badge');
       const pageInfo = document.getElementById('inv-page-info');
-      const prevBtn = document.getElementById('inv-prev') as HTMLButtonElement;
       const nextBtn = document.getElementById('inv-next') as HTMLButtonElement;
 
-      if (totalBadge) totalBadge.textContent = `${res.data.total} Invoices`;
-      if (pageInfo) pageInfo.textContent = `Showing ${res.data.items.length} of ${res.data.total} invoices`;
-      if (prevBtn) prevBtn.disabled = currentPage <= 1;
-      if (nextBtn) nextBtn.disabled = currentPage * pageSize >= res.data.total;
+      if (totalBadge) totalBadge.textContent = `${res.data.items.length} Invoices`;
+      if (pageInfo) pageInfo.textContent = `Displaying ${res.data.items.length} records`;
+      if (nextBtn) nextBtn.disabled = !res.data.has_more;
 
       if (table) {
         if (res.data.items.length === 0) {
-          table.innerHTML = '<tr><td colspan="9" class="py-12 text-center text-slate-400">No invoices match criteria.</td></tr>';
+          table.innerHTML = '<tr><td colspan="9" class="py-8 text-center text-slate-400 text-xs">No invoices match criteria.</td></tr>';
           return;
         }
 
         table.innerHTML = res.data.items.map((inv: any) => `
-          <tr class="hover:bg-slate-800/40 transition-colors">
-            <td class="py-3 px-4 font-mono font-bold text-white">
-              <a href="/invoices/${inv.id}" class="hover:text-indigo-400 underline decoration-indigo-500/40">
+          <tr>
+            <td class="font-mono font-bold text-slate-900">
+              <a href="/invoices/${inv.id}" class="hover:text-[#714B67] underline decoration-slate-300">
                 ${inv.invoice_number}
               </a>
             </td>
-            <td class="py-3 px-4 font-semibold text-slate-200">${inv.customer_name || 'Customer #' + inv.customer_id}</td>
-            <td class="py-3 px-4 font-mono text-slate-400">
-              <a href="/subscriptions/${inv.subscription_id}" class="hover:text-indigo-300">
+            <td class="font-medium text-slate-800">${inv.customer_name || 'Customer #' + inv.customer_id}</td>
+            <td class="font-mono text-slate-600 text-xs">
+              <a href="/subscriptions/${inv.subscription_id}" class="hover:underline">
                 ${inv.subscription_number || '#' + inv.subscription_id}
               </a>
             </td>
-            <td class="py-3 px-4 font-mono text-slate-400">${inv.issue_date}</td>
-            <td class="py-3 px-4 font-mono text-slate-400">${inv.due_date}</td>
-            <td class="py-3 px-4 font-mono font-bold text-white">${formatUSD(inv.total_amount)}</td>
-            <td class="py-3 px-4 font-mono font-bold ${inv.amount_due > 0 ? 'text-amber-400' : 'text-slate-500'}">${formatUSD(inv.amount_due)}</td>
-            <td class="py-3 px-4">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getInvoiceClass(inv.status)}">
+            <td class="font-mono text-slate-600 text-xs">${inv.issue_date}</td>
+            <td class="font-mono text-slate-600 text-xs">${inv.due_date}</td>
+            <td class="font-mono font-bold text-slate-900">${formatUSD(inv.total_amount)}</td>
+            <td class="font-mono font-bold ${inv.amount_due > 0 ? 'text-amber-700' : 'text-slate-500'}">${formatUSD(inv.amount_due)}</td>
+            <td>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getInvoiceClass(inv.status)}">
                 ${inv.status}
               </span>
             </td>
-            <td class="py-3 px-4 text-right flex items-center justify-end gap-2">
-              <a 
-                href="${API_URL}/api/v1/billing/invoices/${inv.id}/pdf" 
-                target="_blank" 
-                class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-[11px] border border-slate-700" 
-                title="Download Official ReportLab PDF"
-              >
-                PDF
-              </a>
-              ${inv.amount_due > 0 ? `
-                <button 
-                  class="btn-open-payment px-2.5 py-1 rounded bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 font-semibold text-[11px] border border-emerald-500/30"
-                  data-inv='${JSON.stringify(inv)}'
+            <td class="text-right">
+              <div class="inline-flex items-center gap-1.5">
+                <a 
+                  href="${API_URL}/api/v1/billing/invoices/${inv.id}/pdf" 
+                  target="_blank" 
+                  class="px-2 py-0.5 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium text-[11px] shadow-2xs" 
+                  title="Download Official ReportLab PDF"
                 >
-                  Pay
-                </button>
-              ` : `
-                <span class="px-2 py-1 text-[11px] text-emerald-400 font-bold">Settled</span>
-              `}
+                  PDF
+                </a>
+                ${inv.status !== 'paid' ? `
+                  <button 
+                    class="btn-open-pay px-2 py-0.5 rounded bg-[#714B67] hover:bg-[#5a3c53] text-white font-semibold text-[11px] shadow-2xs"
+                    data-inv='${JSON.stringify(inv)}'
+                  >
+                    Pay
+                  </button>
+                ` : ''}
+              </div>
             </td>
           </tr>
         `).join('');
 
         // Attach pay button listeners
-        document.querySelectorAll('.btn-open-payment').forEach(btn => {
+        document.querySelectorAll('.btn-open-pay').forEach(btn => {
           btn.addEventListener('click', (e) => {
             const raw = (e.currentTarget as HTMLElement).dataset.inv!;
             openPaymentModal(JSON.parse(raw));
@@ -263,39 +258,21 @@ import Layout from '../../layouts/Layout.astro';
       }
     }
 
-    function formatUSD(val: number): string {
-      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
-    }
-
-    function getInvoiceClass(status: string): string {
-      const map: Record<string, string> = {
-        draft: 'bg-slate-800 text-slate-400 border-slate-700',
-        confirmed: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-        posted: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-        paid: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-        partially_paid: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-        overdue: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
-        cancelled: 'bg-slate-800 text-slate-400 border-slate-700',
-      };
-      return map[status?.toLowerCase()] || map.draft;
-    }
-
-    // Modal
-    const paymentModal = document.getElementById('payment-modal')!;
-    const closePayBtn = document.getElementById('btn-close-payment-modal')!;
-    const cancelPayBtn = document.getElementById('btn-cancel-pay')!;
-
     function openPaymentModal(inv: any) {
       selectedInvoiceForPayment = inv;
+      const modal = document.getElementById('payment-modal')!;
       document.getElementById('pay-inv-number')!.textContent = inv.invoice_number;
       document.getElementById('pay-inv-balance')!.textContent = formatUSD(inv.amount_due);
       (document.getElementById('pay-amount') as HTMLInputElement).value = String(inv.amount_due);
-      (document.getElementById('pay-reference') as HTMLInputElement).value = `TXN-${Date.now().toString().slice(-6)}`;
-      paymentModal.classList.remove('hidden');
+      modal.classList.remove('hidden');
     }
 
-    closePayBtn.addEventListener('click', () => paymentModal.classList.add('hidden'));
-    cancelPayBtn.addEventListener('click', () => paymentModal.classList.add('hidden'));
+    document.getElementById('btn-close-payment-modal')?.addEventListener('click', () => {
+      document.getElementById('payment-modal')?.classList.add('hidden');
+    });
+    document.getElementById('btn-cancel-pay')?.addEventListener('click', () => {
+      document.getElementById('payment-modal')?.classList.add('hidden');
+    });
 
     document.getElementById('btn-submit-payment')?.addEventListener('click', async () => {
       if (!selectedInvoiceForPayment) return;
@@ -303,53 +280,66 @@ import Layout from '../../layouts/Layout.astro';
       const method = (document.getElementById('pay-method') as HTMLSelectElement).value;
       const ref = (document.getElementById('pay-reference') as HTMLInputElement).value;
 
-      const payload = {
-        invoice_id: selectedInvoiceForPayment.id,
-        amount: amount,
-        payment_method: method,
-        payment_date: new Date().toISOString().split('T')[0],
-        reference_note: ref,
-      };
-
-      const res = await apiFetch<any>('/api/v1/payments', {
+      const res = await apiFetch<any>('/api/v1/payments/', {
         method: 'POST',
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          invoice_id: selectedInvoiceForPayment.id,
+          amount: amount,
+          payment_method: method,
+          reference_note: ref || 'Manual ERP Settlement',
+        }),
       });
 
       if (res.data) {
-        paymentModal.classList.add('hidden');
-        (window as any).showToast('Payment Reconciled', `Recorded ${formatUSD(amount)} against ${selectedInvoiceForPayment.invoice_number}`, 'success');
+        document.getElementById('payment-modal')?.classList.add('hidden');
+        alert(`✅ Payment recorded for ${selectedInvoiceForPayment.invoice_number}`);
         fetchInvoices();
       } else {
-        (window as any).showToast('Payment Failed', res.error || 'Server error', 'error');
+        alert(res.error || 'Payment failed');
       }
     });
 
-    // Filter Tabs
+    function formatUSD(val: number | string | null | undefined): string {
+      const num = Number(val || 0);
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+    }
+
+    function getInvoiceClass(status: string): string {
+      const map: Record<string, string> = {
+        draft: 'bg-slate-100 text-slate-600 border-slate-200',
+        confirmed: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+        posted: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+        paid: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        partially_paid: 'bg-amber-50 text-amber-700 border-amber-200',
+        overdue: 'bg-rose-50 text-rose-700 border-rose-200',
+        cancelled: 'bg-slate-100 text-slate-600 border-slate-200',
+      };
+      return map[status?.toLowerCase()] || map.draft;
+    }
+
+    // Tabs
     document.querySelectorAll('.inv-tab-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         document.querySelectorAll('.inv-tab-btn').forEach(b => {
-          b.classList.remove('bg-indigo-600', 'text-white', 'active');
-          b.classList.add('text-slate-400');
+          b.classList.remove('bg-[#714B67]', 'text-white', 'active');
+          b.classList.add('text-slate-600');
         });
         const target = e.currentTarget as HTMLElement;
-        target.classList.add('bg-indigo-600', 'text-white', 'active');
-        target.classList.remove('text-slate-400');
+        target.classList.add('bg-[#714B67]', 'text-white', 'active');
+        target.classList.remove('text-slate-600');
 
         currentStatus = target.dataset.status || '';
-        currentPage = 1;
+        cursor = 0;
         fetchInvoices();
       });
     });
 
-    // Run Batch Billing from Page
     document.getElementById('btn-trigger-batch-billing-page')?.addEventListener('click', async () => {
-      document.getElementById('btn-run-batch-billing')?.click();
-    });
-
-    // Refresh on SSE
-    window.addEventListener('brightloop:sse', () => {
-      fetchInvoices();
+      const res = await apiFetch<any>('/api/v1/billing/run-billing', { method: 'POST' });
+      if (res.data) {
+        alert(`✅ Batch billing complete!\nInvoices generated: ${res.data.invoices_generated || 0}`);
+        fetchInvoices();
+      }
     });
 
     fetchInvoices();

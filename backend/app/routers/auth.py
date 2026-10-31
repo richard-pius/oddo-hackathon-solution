@@ -61,6 +61,7 @@ async def register_customer(data: UserRegister, response: Response, db: AsyncSes
         httponly=True,
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         samesite="lax",
+        path="/",
     )
 
     return TokenResponse(
@@ -108,6 +109,7 @@ async def login(
         httponly=True,
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         samesite="lax",
+        path="/",
     )
 
     return TokenResponse(
@@ -120,7 +122,7 @@ async def login(
 
 @router.post("/logout")
 async def logout(response: Response):
-    response.delete_cookie("access_token")
+    response.delete_cookie(key="access_token", path="/")
     return {"detail": "Logged out"}
 
 

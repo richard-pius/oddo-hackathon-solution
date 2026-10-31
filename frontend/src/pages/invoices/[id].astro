@@ -15,32 +15,32 @@ export function getStaticPaths() {
 const { id } = Astro.params;
 ---
 
-<Layout title="Invoice Details — Brightloop ERP" activeNav="invoices">
-  <div class="max-w-4xl mx-auto space-y-6">
-    <!-- Breadcrumb & Action Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
-      <nav class="flex items-center gap-2 text-xs text-slate-400">
-        <a href="/" class="hover:text-white">Dashboard</a>
-        <span>/</span>
-        <a href="/invoices" class="hover:text-white">Invoices</a>
-        <span>/</span>
-        <span class="text-indigo-400 font-mono font-bold" id="bc-inv-num">INV-...</span>
-      </nav>
+<Layout title="Invoice Details — Brightloop ERP" activeNav="invoices" breadcrumbs={[{ label: 'Brightloop ERP', href: '/' }, { label: 'Invoices', href: '/invoices' }, { label: 'Invoice Document' }]}>
+  <div class="max-w-4xl mx-auto space-y-4">
+    
+    <!-- Top Action Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
+      <div class="flex items-center gap-2">
+        <h1 class="text-xl font-bold font-mono text-slate-900 tracking-tight" id="inv-doc-title">INV-...</h1>
+        <div id="inv-status-pill">
+          <!-- Status pill injected -->
+        </div>
+      </div>
 
       <div class="flex items-center gap-2">
         <a 
           id="btn-download-pdf" 
           href="#" 
           target="_blank" 
-          class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs"
         >
-          <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-          <span>Download PDF Invoice</span>
+          <svg class="w-3.5 h-3.5 text-[#714B67]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          <span>Download Official PDF</span>
         </a>
 
         <button 
           id="btn-trigger-pay" 
-          class="hidden items-center gap-1.5 px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/30"
+          class="hidden items-center gap-1.5 px-3 py-1.5 rounded bg-[#714B67] hover:bg-[#5a3c53] text-white text-xs font-semibold shadow-xs"
         >
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
           <span>Record Payment</span>
@@ -48,82 +48,80 @@ const { id } = Astro.params;
       </div>
     </div>
 
-    <!-- Official ERP Invoice Document Presentation -->
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-8 relative overflow-hidden">
-      <!-- Watermark or status stamp -->
-      <div id="stamp-paid" class="hidden absolute top-8 right-8 border-4 border-emerald-500/30 text-emerald-400 font-black text-2xl uppercase tracking-widest px-4 py-1 rounded-xl rotate-12 select-none">
+    <!-- Official ERP Invoice Document Sheet -->
+    <div class="bg-white border border-slate-200 rounded-md p-8 shadow-xs space-y-6 relative overflow-hidden">
+      
+      <!-- PAID Watermark Stamp -->
+      <div id="stamp-paid" class="hidden absolute top-8 right-8 border-2 border-emerald-600 text-emerald-700 font-bold text-xl uppercase tracking-widest px-4 py-1 rounded rotate-12 select-none">
         PAID
       </div>
 
       <!-- Invoice Header: Brightloop + Invoice # -->
-      <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-6 border-b border-slate-800 pb-6">
+      <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-6 border-b border-slate-200 pb-5">
         <div>
-          <div class="flex items-center gap-3 mb-2">
-            <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center font-black text-white text-base">
+          <div class="flex items-center gap-2.5 mb-1.5">
+            <div class="w-7 h-7 rounded bg-[#714B67] flex items-center justify-center font-bold text-white text-xs">
               BL
             </div>
-            <span class="font-black text-xl text-white tracking-tight">Brightloop Software</span>
+            <span class="font-bold text-lg text-slate-900 tracking-tight">Brightloop Software</span>
           </div>
-          <div class="text-xs text-slate-400 leading-relaxed font-mono">
-            Recurring Billing & SaaS Infrastructure<br>
+          <div class="text-xs text-slate-500 leading-relaxed font-mono">
+            Recurring Billing & Cloud Infrastructure<br>
             GST Jurisdiction: IN-18% Standard<br>
             billing@brightloop.io
           </div>
         </div>
 
         <div class="text-left sm:text-right">
-          <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Tax Invoice</div>
-          <div class="text-2xl font-black text-white font-mono mt-1" id="inv-doc-number">INV-...</div>
-          <div class="mt-2" id="inv-status-pill">
-            <!-- Badge injected -->
-          </div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Tax Invoice</div>
+          <div class="text-2xl font-bold text-slate-900 font-mono mt-0.5" id="inv-doc-number">INV-...</div>
         </div>
       </div>
 
       <!-- Parties & Metadata Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
-        <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800/80 space-y-1">
-          <div class="font-bold uppercase tracking-wider text-slate-400 text-[10px]">Billed To (Customer):</div>
-          <div class="font-bold text-white text-sm" id="cust-name">...</div>
-          <div class="text-slate-400 font-mono" id="cust-email">...</div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+        <div class="bg-slate-50 p-3.5 rounded border border-slate-200 space-y-1">
+          <div class="font-semibold uppercase tracking-wider text-slate-400 text-[10px]">Billed To (Customer Account):</div>
+          <div class="font-bold text-slate-900 text-sm" id="cust-name">...</div>
+          <div class="text-slate-500 font-mono" id="cust-email">...</div>
         </div>
 
-        <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800/80 space-y-2 font-mono">
+        <div class="bg-slate-50 p-3.5 rounded border border-slate-200 space-y-1.5 font-mono text-xs">
           <div class="flex justify-between">
-            <span class="text-slate-400 font-sans">Issue Date:</span>
-            <span class="text-white font-bold" id="inv-issue-date">...</span>
+            <span class="text-slate-500 font-sans">Issue Date:</span>
+            <span class="text-slate-900 font-semibold" id="inv-issue-date">...</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-400 font-sans">Due Date:</span>
-            <span class="text-amber-400 font-bold" id="inv-due-date">...</span>
+            <span class="text-slate-500 font-sans">Due Date:</span>
+            <span class="text-amber-800 font-bold" id="inv-due-date">...</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-400 font-sans">Billing Period:</span>
-            <span class="text-slate-300" id="inv-period">...</span>
+            <span class="text-slate-500 font-sans">Billing Period:</span>
+            <span class="text-slate-700" id="inv-period">...</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-400 font-sans">Contract Reference:</span>
-            <span class="text-indigo-400 font-bold" id="inv-sub-link">...</span>
+            <span class="text-slate-500 font-sans">Contract Reference:</span>
+            <span class="text-[#714B67] font-semibold" id="inv-sub-link">...</span>
           </div>
         </div>
       </div>
 
-      <!-- Line Items Table -->
+      <!-- Itemized Line Items Table -->
       <div>
-        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Itemized Charges</div>
-        <div class="overflow-x-auto rounded-xl border border-slate-800">
-          <table class="w-full text-left text-xs text-slate-300">
-            <thead class="bg-slate-950 font-bold uppercase tracking-wider text-[10px] text-slate-400 border-b border-slate-800">
+        <div class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Itemized Charges</div>
+        <div class="overflow-x-auto border border-slate-200 rounded">
+          <table class="erp-table">
+            <thead>
               <tr>
-                <th class="py-3 px-4">Description</th>
-                <th class="py-3 px-4 w-20 text-center">Qty</th>
-                <th class="py-3 px-4 w-28">Unit Price</th>
-                <th class="py-3 px-4 w-24">Discount</th>
-                <th class="py-3 px-4 w-24">Tax</th>
-                <th class="py-3 px-4 w-32 text-right">Amount</th>
+                <th>Description</th>
+                <th class="w-20 text-center">Qty</th>
+                <th class="w-28">Unit Price</th>
+                <th class="w-24">Discount</th>
+                <th class="w-24">Tax</th>
+                <th class="w-32 text-right">Amount</th>
               </tr>
             </thead>
-            <tbody id="inv-lines-table" class="divide-y divide-slate-800/60 font-medium">
+            <tbody id="inv-lines-table">
               <!-- Injected -->
             </tbody>
           </table>
@@ -131,63 +129,65 @@ const { id } = Astro.params;
       </div>
 
       <!-- Totals Summary & Balance Due -->
-      <div class="flex justify-end pt-2">
-        <div class="w-80 bg-slate-950 p-5 rounded-2xl border border-slate-800 space-y-2.5 text-xs font-mono">
-          <div class="flex justify-between text-slate-400">
+      <div class="flex justify-end pt-1">
+        <div class="w-72 bg-slate-50 p-4 rounded border border-slate-200 space-y-2 text-xs font-mono">
+          <div class="flex justify-between text-slate-600">
             <span>Subtotal:</span>
-            <span class="text-white font-bold" id="tot-subtotal">$0.00</span>
+            <span class="text-slate-900 font-bold" id="tot-subtotal">$0.00</span>
           </div>
-          <div class="flex justify-between text-slate-400">
+          <div class="flex justify-between text-slate-600">
             <span>Discount:</span>
-            <span class="text-emerald-400 font-bold" id="tot-discount">-$0.00</span>
+            <span class="text-emerald-700 font-bold" id="tot-discount">-$0.00</span>
           </div>
-          <div class="flex justify-between text-slate-400">
+          <div class="flex justify-between text-slate-600">
             <span>Taxes (18% GST):</span>
-            <span class="text-white font-bold" id="tot-tax">$0.00</span>
+            <span class="text-slate-900 font-bold" id="tot-tax">$0.00</span>
           </div>
-          <div class="border-t border-slate-800 pt-2 flex justify-between text-sm">
-            <span class="text-white font-bold font-sans">Total Amount:</span>
-            <span class="text-white font-extrabold" id="tot-total">$0.00</span>
+          <div class="border-t border-slate-200 pt-1.5 flex justify-between text-sm">
+            <span class="font-bold text-slate-900 font-sans">Total Amount:</span>
+            <span class="text-slate-900 font-extrabold" id="tot-total">$0.00</span>
           </div>
-          <div class="flex justify-between text-slate-400">
+          <div class="flex justify-between text-slate-600">
             <span>Paid to Date:</span>
-            <span class="text-emerald-400 font-bold" id="tot-paid">$0.00</span>
+            <span class="text-emerald-700 font-bold" id="tot-paid">$0.00</span>
           </div>
-          <div class="border-t border-slate-800 pt-2 flex justify-between text-base">
-            <span class="text-white font-bold font-sans">Amount Due:</span>
-            <span class="text-amber-400 font-black" id="tot-due">$0.00</span>
+          <div class="border-t border-slate-200 pt-1.5 flex justify-between text-sm">
+            <span class="font-bold text-slate-900 font-sans">Amount Due:</span>
+            <span class="text-amber-800 font-black text-base" id="tot-due">$0.00</span>
           </div>
         </div>
       </div>
 
-      <!-- Payments Reconciled Section -->
-      <div class="pt-6 border-t border-slate-800">
-        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Reconciled Payment Transactions</div>
-        <div id="payments-list" class="space-y-2">
+      <!-- Reconciled Payment Transactions -->
+      <div class="pt-4 border-t border-slate-100">
+        <div class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Reconciled Payment Transactions</div>
+        <div id="payments-list" class="space-y-1.5">
           <div class="text-xs text-slate-400 italic">No payments recorded against this invoice yet.</div>
         </div>
       </div>
+
     </div>
+
   </div>
 
   <!-- Record Payment Modal -->
-  <div id="pay-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h3 class="font-bold text-white text-base">Record Payment</h3>
-        <button id="btn-close-pay-modal" class="text-slate-400 hover:text-white p-1">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+  <div id="pay-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 rounded-md p-5 max-w-md w-full shadow-lg space-y-3">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+        <h3 class="font-bold text-slate-900 text-sm">Record Payment</h3>
+        <button id="btn-close-pay-modal" class="text-slate-400 hover:text-slate-600 p-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
       </div>
 
-      <div class="space-y-3 text-xs">
+      <div class="space-y-2.5 text-xs">
         <div>
-          <label class="block font-bold text-slate-300 mb-1">Amount ($)</label>
-          <input type="number" step="0.01" id="input-pay-amount" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 font-mono text-white text-sm font-bold focus:outline-none focus:border-emerald-500" />
+          <label class="block font-semibold text-slate-700 mb-1">Amount ($)</label>
+          <input type="number" step="0.01" id="input-pay-amount" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 font-mono text-slate-900 text-sm font-bold focus:outline-none focus:ring-1 focus:ring-[#714B67]" />
         </div>
         <div>
-          <label class="block font-bold text-slate-300 mb-1">Payment Method</label>
-          <select id="select-pay-method" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500">
+          <label class="block font-semibold text-slate-700 mb-1">Payment Method</label>
+          <select id="select-pay-method" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#714B67]">
             <option value="credit_card">Credit Card (Stripe Gateway)</option>
             <option value="bank_transfer">Wire / ACH Bank Transfer</option>
             <option value="stripe">Stripe Checkout / Webhook</option>
@@ -196,16 +196,16 @@ const { id } = Astro.params;
           </select>
         </div>
         <div>
-          <label class="block font-bold text-slate-300 mb-1">Reference / Transaction Note</label>
-          <input type="text" id="input-pay-ref" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500" />
+          <label class="block font-semibold text-slate-700 mb-1">Reference / Note</label>
+          <input type="text" id="input-pay-ref" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#714B67]" />
         </div>
       </div>
 
-      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
-        <button id="btn-cancel-pay-modal" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <button id="btn-cancel-pay-modal" class="px-3 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium">
           Cancel
         </button>
-        <button id="btn-confirm-pay" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/30">
+        <button id="btn-confirm-pay" class="px-3.5 py-1 rounded bg-[#714B67] hover:bg-[#5a3c53] text-white text-xs font-semibold shadow-xs">
           Confirm Payment
         </button>
       </div>
@@ -229,7 +229,7 @@ const { id } = Astro.params;
       ]);
 
       if (!invRes.data) {
-        (window as any).showToast('Error', invRes.error || 'Invoice not found', 'error');
+        alert(invRes.error || 'Invoice not found');
         return;
       }
 
@@ -239,67 +239,63 @@ const { id } = Astro.params;
     }
 
     function renderInvoice(inv: any) {
-      document.getElementById('bc-inv-num')!.textContent = inv.invoice_number;
+      document.getElementById('inv-doc-title')!.textContent = inv.invoice_number;
       document.getElementById('inv-doc-number')!.textContent = inv.invoice_number;
-      (document.getElementById('btn-download-pdf') as HTMLAnchorElement).href = `${API_URL}/api/v1/billing/invoices/${inv.id}/pdf`;
-
       document.getElementById('cust-name')!.textContent = inv.customer_name || `Customer #${inv.customer_id}`;
-      document.getElementById('cust-email')!.textContent = inv.customer_email || 'client@brightloop.io';
-
+      document.getElementById('cust-email')!.textContent = inv.customer_email || '';
       document.getElementById('inv-issue-date')!.textContent = inv.issue_date;
       document.getElementById('inv-due-date')!.textContent = inv.due_date;
       document.getElementById('inv-period')!.textContent = `${inv.billing_period_start || ''} — ${inv.billing_period_end || ''}`;
-
+      
       const subLink = document.getElementById('inv-sub-link')!;
       if (inv.subscription_id) {
         subLink.innerHTML = `<a href="/subscriptions/${inv.subscription_id}" class="hover:underline">${inv.subscription_number || '#' + inv.subscription_id}</a>`;
       } else {
-        subLink.textContent = 'Ad-hoc';
+        subLink.textContent = 'None';
       }
 
-      // Status pill & watermark
-      const statusPill = document.getElementById('inv-status-pill')!;
-      statusPill.innerHTML = `
-        <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${getInvoiceClass(inv.status)}">
-          ${inv.status}
-        </span>
-      `;
+      // Status pill & PDF button
+      const pill = document.getElementById('inv-status-pill')!;
+      pill.innerHTML = `<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getInvoiceClass(inv.status)}">${inv.status}</span>`;
 
-      const stamp = document.getElementById('stamp-paid')!;
-      if (inv.status.toLowerCase() === 'paid') {
-        stamp.classList.remove('hidden');
+      const pdfBtn = document.getElementById('btn-download-pdf') as HTMLAnchorElement;
+      pdfBtn.href = `${API_URL}/api/v1/billing/invoices/${inv.id}/pdf`;
+
+      // Paid stamp
+      const stampPaid = document.getElementById('stamp-paid')!;
+      if (inv.status === 'paid') {
+        stampPaid.classList.remove('hidden');
       } else {
-        stamp.classList.add('hidden');
+        stampPaid.classList.add('hidden');
       }
 
-      // Pay button toggle
+      // Payment button
       const payBtn = document.getElementById('btn-trigger-pay')!;
-      if (inv.amount_due > 0) {
+      if (inv.status !== 'paid' && inv.status !== 'cancelled') {
         payBtn.classList.remove('hidden');
-        payBtn.classList.add('flex');
+        payBtn.classList.add('inline-flex');
       } else {
         payBtn.classList.add('hidden');
       }
 
-      // Lines
+      // Render lines
       const tbody = document.getElementById('inv-lines-table')!;
       const lines = inv.lines || [];
       if (lines.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-400">No items on this invoice.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="py-4 text-center text-slate-400 text-xs">No line items recorded.</td></tr>';
       } else {
         tbody.innerHTML = lines.map((l: any) => `
-          <tr class="hover:bg-slate-800/30 transition-colors">
-            <td class="py-3 px-4 font-semibold text-white">${l.description}</td>
-            <td class="py-3 px-4 text-center font-mono font-bold text-slate-200">${l.quantity}</td>
-            <td class="py-3 px-4 font-mono text-slate-300">${formatUSD(l.unit_price)}</td>
-            <td class="py-3 px-4 font-mono text-emerald-400">-${formatUSD(l.discount_amount || 0)}</td>
-            <td class="py-3 px-4 font-mono text-slate-400">${formatUSD(l.tax_amount || 0)}</td>
-            <td class="py-3 px-4 font-mono font-bold text-white text-right">${formatUSD(l.total_amount)}</td>
+          <tr>
+            <td class="font-medium text-slate-900">${l.description}</td>
+            <td class="font-mono text-center text-slate-800">${l.quantity}</td>
+            <td class="font-mono text-slate-700">${formatUSD(l.unit_price)}</td>
+            <td class="font-mono text-emerald-700">-${formatUSD(l.discount_amount || 0)}</td>
+            <td class="font-mono text-slate-600">${formatUSD(l.tax_amount || 0)}</td>
+            <td class="font-mono font-bold text-slate-900 text-right">${formatUSD(l.total_amount)}</td>
           </tr>
         `).join('');
       }
 
-      // Totals
       document.getElementById('tot-subtotal')!.textContent = formatUSD(inv.subtotal || 0);
       document.getElementById('tot-discount')!.textContent = `-${formatUSD(inv.discount_total || 0)}`;
       document.getElementById('tot-tax')!.textContent = formatUSD(inv.tax_total || 0);
@@ -309,85 +305,75 @@ const { id } = Astro.params;
     }
 
     function renderPayments(payments: any[]) {
-      const container = document.getElementById('payments-list')!;
+      const list = document.getElementById('payments-list')!;
       if (payments.length === 0) {
-        container.innerHTML = '<div class="text-xs text-slate-400 italic">No payments recorded against this invoice yet.</div>';
-        return;
-      }
-
-      container.innerHTML = payments.map((p: any) => `
-        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs">
-          <div class="flex items-center gap-3">
-            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <div>
-              <div class="font-bold text-white">${p.payment_reference || 'REF-' + p.id}</div>
-              <div class="text-[10px] text-slate-400 capitalize">${p.payment_method.replace('_', ' ')} &bull; ${p.payment_date}</div>
+        list.innerHTML = '<div class="text-xs text-slate-400 italic">No payments recorded against this invoice yet.</div>';
+      } else {
+        list.innerHTML = payments.map((p: any) => `
+          <div class="flex items-center justify-between p-2 rounded bg-slate-50 border border-slate-200 text-xs">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+              <span class="font-mono font-semibold text-slate-900">${p.payment_number || 'TXN-' + p.id}</span>
+              <span class="text-slate-500 font-mono text-[10px]">${p.payment_date}</span>
+              <span class="px-1.5 py-0.2 rounded text-[10px] bg-slate-200 text-slate-700 font-mono capitalize">${p.payment_method}</span>
             </div>
+            <div class="font-mono font-bold text-emerald-700">+${formatUSD(p.amount)}</div>
           </div>
-          <div class="text-right">
-            <div class="font-bold text-emerald-400 text-sm">${formatUSD(p.amount)}</div>
-            <span class="text-[10px] text-slate-400 uppercase font-sans font-bold">Settled</span>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function formatUSD(val: number): string {
-      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
-    }
-
-    function getInvoiceClass(status: string): string {
-      const map: Record<string, string> = {
-        draft: 'bg-slate-800 text-slate-400 border-slate-700',
-        confirmed: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-        posted: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-        paid: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-        partially_paid: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-        overdue: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
-        cancelled: 'bg-slate-800 text-slate-400 border-slate-700',
-      };
-      return map[status?.toLowerCase()] || map.draft;
+        `).join('');
+      }
     }
 
     // Modal
     const payModal = document.getElementById('pay-modal')!;
-    const triggerPayBtn = document.getElementById('btn-trigger-pay')!;
-    const closePayBtn = document.getElementById('btn-close-pay-modal')!;
-    const cancelPayBtn = document.getElementById('btn-cancel-pay-modal')!;
-
-    triggerPayBtn.addEventListener('click', () => {
+    document.getElementById('btn-trigger-pay')?.addEventListener('click', () => {
+      if (!invoiceData) return;
       (document.getElementById('input-pay-amount') as HTMLInputElement).value = String(invoiceData.amount_due);
-      (document.getElementById('input-pay-ref') as HTMLInputElement).value = `TXN-INVPAY-${Date.now().toString().slice(-6)}`;
       payModal.classList.remove('hidden');
     });
 
-    closePayBtn.addEventListener('click', () => payModal.classList.add('hidden'));
-    cancelPayBtn.addEventListener('click', () => payModal.classList.add('hidden'));
+    document.getElementById('btn-close-pay-modal')?.addEventListener('click', () => payModal.classList.add('hidden'));
+    document.getElementById('btn-cancel-pay-modal')?.addEventListener('click', () => payModal.classList.add('hidden'));
 
     document.getElementById('btn-confirm-pay')?.addEventListener('click', async () => {
       const amount = Number((document.getElementById('input-pay-amount') as HTMLInputElement).value);
       const method = (document.getElementById('select-pay-method') as HTMLSelectElement).value;
       const ref = (document.getElementById('input-pay-ref') as HTMLInputElement).value;
 
-      const res = await apiFetch<any>('/api/v1/payments', {
+      const res = await apiFetch<any>('/api/v1/payments/', {
         method: 'POST',
         body: JSON.stringify({
           invoice_id: invId,
           amount,
           payment_method: method,
-          payment_date: new Date().toISOString().split('T')[0],
-          reference_note: ref,
+          reference_note: ref || 'Manual Invoice Settlement',
         }),
       });
 
       if (res.data) {
         payModal.classList.add('hidden');
-        (window as any).showToast('Payment Successful', `Reconciled ${formatUSD(amount)} against ${invoiceData.invoice_number}`, 'success');
         loadInvoiceDetails();
       } else {
-        (window as any).showToast('Payment Error', res.error || 'Server error', 'error');
+        alert(res.error || 'Payment failed');
       }
     });
+
+    function formatUSD(val: number | string | null | undefined): string {
+      const num = Number(val || 0);
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+    }
+
+    function getInvoiceClass(status: string): string {
+      const map: Record<string, string> = {
+        draft: 'bg-slate-100 text-slate-600 border-slate-200',
+        confirmed: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+        posted: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+        paid: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        partially_paid: 'bg-amber-50 text-amber-700 border-amber-200',
+        overdue: 'bg-rose-50 text-rose-700 border-rose-200',
+        cancelled: 'bg-slate-100 text-slate-600 border-slate-200',
+      };
+      return map[status?.toLowerCase()] || map.draft;
+    }
 
     loadInvoiceDetails();
   </script>
