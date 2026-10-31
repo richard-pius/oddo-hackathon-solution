@@ -42,6 +42,7 @@ router = APIRouter(prefix="/api/v1/subscriptions", tags=["Subscriptions"])
 
 # ─── List with cursor pagination ─────────────────────────────────────────────
 
+@router.get("", response_model=dict, include_in_schema=False)
 @router.get("/", response_model=dict)
 async def list_subscriptions(
     cursor: int = Query(0, ge=0),
@@ -105,6 +106,7 @@ async def list_subscriptions(
 
 # ─── Create Subscription ─────────────────────────────────────────────────────
 
+@router.post("", response_model=SubscriptionOut, status_code=201, include_in_schema=False)
 @router.post("/", response_model=SubscriptionOut, status_code=201)
 async def create_subscription(
     data: SubscriptionCreate,

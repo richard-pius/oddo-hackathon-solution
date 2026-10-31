@@ -24,6 +24,66 @@ const {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- ─── Mandatory Zero-Flash Synchronous Session Guard ───────────────────────── -->
+  <script is:inline>
+    (function() {
+      try {
+        const path = window.location.pathname;
+        const isAuthPage = path === '/login' || path === '/register';
+        if (isAuthPage) return;
+
+        function getCookie(name) {
+          const match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
+          return match ? decodeURIComponent(match[3]) : null;
+        }
+
+        const token = localStorage.getItem('brightloop_token') || getCookie('access_token');
+
+        function isTokenExpired(t) {
+          if (!t) return true;
+          try {
+            const parts = t.split('.');
+            if (parts.length !== 3) return false;
+            const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+            if (!payload.exp) return false;
+            return Date.now() >= payload.exp * 1000;
+          } catch (e) {
+            return false;
+          }
+        }
+
+        // 1. Strict redirection if token missing or expired
+        if (!token || isTokenExpired(token)) {
+          document.documentElement.style.display = 'none';
+          try {
+            document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+            localStorage.removeItem('brightloop_token');
+            localStorage.removeItem('brightloop_user');
+          } catch(e) {}
+          window.location.replace('/login?redirect=' + encodeURIComponent(path));
+          return;
+        }
+
+        // 2. Strict Tenant Isolation for Customer Role
+        const userRaw = localStorage.getItem('brightloop_user');
+        if (userRaw) {
+          try {
+            const user = JSON.parse(userRaw);
+            if (user && user.role === 'customer') {
+              const staffPages = ['/', '/subscriptions/new', '/catalog', '/rules'];
+              if (staffPages.includes(path) || path.startsWith('/catalog') || path.startsWith('/rules')) {
+                document.documentElement.style.display = 'none';
+                window.location.replace('/portal');
+              }
+            }
+          } catch(e) {}
+        }
+      } catch (err) {
+        window.location.replace('/login');
+      }
+    })();
+  </script>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen flex font-['Plus_Jakarta_Sans',sans-serif] antialiased">
   
@@ -31,7 +91,7 @@ const {
   <aside class="w-56 bg-white border-r border-slate-200 flex flex-col shrink-0 min-h-screen z-30 select-none">
     <!-- Brand Header -->
     <div class="h-14 border-b border-slate-200 px-4 flex items-center gap-2.5">
-      <div class="w-7 h-7 rounded bg-[#714B67] flex items-center justify-center font-bold text-white text-xs tracking-wider shadow-xs">
+      <div class="w-7 h-7 rounded bg-[#714B67] flex items-center justify-center font-bold text-white text-xs tracking-wider shadow-2xs">
         BL
       </div>
       <div class="flex flex-col">
@@ -184,7 +244,8 @@ const {
       </div>
       <button
         id="btn-sidebar-logout"
-        class="w-full py-1 px-2 rounded border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 hover:text-slate-900 text-[11px] font-medium transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
+        class="w-full py-1.5 px-2 rounded border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 hover:text-rose-600 text-[11px] font-medium transition-colors flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
+        title="Sign Out of Brightloop ERP"
       >
         <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -197,7 +258,7 @@ const {
   <!-- ─── Main Content Shell ──────────────────────────────────────────────────── -->
   <div class="flex-1 flex flex-col min-h-screen min-w-0 overflow-hidden">
     
-    <!-- Sticky Enterprise Top Bar with Breadcrumbs & Action Strip -->
+    <!-- ─── Mandatory Global Header for Authenticated Users ─────────────────── -->
     <header class="h-14 bg-white border-b border-slate-200 sticky top-0 z-20 px-6 flex items-center justify-between shrink-0">
       
       <!-- Breadcrumbs Trail -->
@@ -231,7 +292,7 @@ const {
         <!-- Trigger Billing Batch (Admin/Staff only) -->
         <button
           id="btn-run-batch-billing"
-          class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium transition-colors shadow-2xs"
+          class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium transition-colors shadow-2xs cursor-pointer"
           title="Trigger zero-double-billing batch billing run"
         >
           <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,7 +305,7 @@ const {
         <a
           href="/subscriptions/new"
           id="btn-new-subscription-top"
-          class="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-[#714B67] hover:bg-[#5a3c53] text-white text-xs font-semibold transition-colors shadow-xs"
+          class="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-[#714B67] hover:bg-[#5a3c53] text-white text-xs font-semibold transition-colors shadow-2xs"
         >
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -256,7 +317,7 @@ const {
         <div class="relative" id="role-menu-container">
           <button
             id="role-switch-btn"
-            class="flex items-center gap-2 px-2.5 py-1 rounded border border-slate-200 hover:bg-slate-50 text-xs text-slate-800 transition-colors"
+            class="flex items-center gap-2 px-2.5 py-1 rounded border border-slate-200 hover:bg-slate-50 text-xs text-slate-800 transition-colors cursor-pointer"
           >
             <div id="top-avatar" class="w-5 h-5 rounded bg-[#714B67] text-white flex items-center justify-center font-bold text-[9px]">
               AM
@@ -268,26 +329,26 @@ const {
           </button>
 
           <!-- Dropdown -->
-          <div id="role-dropdown" class="hidden absolute right-0 mt-1 w-64 rounded-md bg-white border border-slate-200 shadow-md p-1.5 z-50 text-xs">
+          <div id="role-dropdown" class="hidden absolute right-0 mt-1 w-64 rounded bg-white border border-slate-200 shadow-md p-1.5 z-50 text-xs">
             <div class="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
-              Switch Persona (Zero-Trust)
+              Active Persona
             </div>
             <div class="py-1 space-y-0.5">
-              <button class="role-switch-option flex items-center justify-between w-full p-2 rounded hover:bg-slate-50 text-left transition-colors" data-email="admin@brightloop.io" data-pass="BrightloopAdmin2026!">
+              <button class="role-switch-option flex items-center justify-between w-full p-2 rounded hover:bg-slate-50 text-left transition-colors cursor-pointer" data-email="admin@brightloop.io" data-pass="BrightloopAdmin2026!">
                 <div>
                   <div class="font-semibold text-slate-800">Alex Morgan</div>
                   <div class="text-[10px] text-slate-500 font-mono">admin@brightloop.io</div>
                 </div>
                 <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">Admin</span>
               </button>
-              <button class="role-switch-option flex items-center justify-between w-full p-2 rounded hover:bg-slate-50 text-left transition-colors" data-email="finance@brightloop.io" data-pass="BrightloopFinance2026!">
+              <button class="role-switch-option flex items-center justify-between w-full p-2 rounded hover:bg-slate-50 text-left transition-colors cursor-pointer" data-email="finance@brightloop.io" data-pass="BrightloopFinance2026!">
                 <div>
                   <div class="font-semibold text-slate-800">Sarah Chen</div>
                   <div class="text-[10px] text-slate-500 font-mono">finance@brightloop.io</div>
                 </div>
                 <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Finance</span>
               </button>
-              <button class="role-switch-option flex items-center justify-between w-full p-2 rounded hover:bg-slate-50 text-left transition-colors" data-email="customer@brightloop.io" data-pass="BrightloopCustomer2026!">
+              <button class="role-switch-option flex items-center justify-between w-full p-2 rounded hover:bg-slate-50 text-left transition-colors cursor-pointer" data-email="customer@brightloop.io" data-pass="BrightloopCustomer2026!">
                 <div>
                   <div class="font-semibold text-slate-800">Acmez Enterprise</div>
                   <div class="text-[10px] text-slate-500 font-mono">customer@brightloop.io</div>
@@ -295,8 +356,31 @@ const {
                 <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">Customer</span>
               </button>
             </div>
+            <div class="border-t border-slate-100 pt-1 mt-1">
+              <button
+                id="btn-dropdown-logout"
+                class="flex items-center gap-1.5 w-full p-2 rounded hover:bg-rose-50 text-rose-600 text-xs font-semibold text-left transition-colors cursor-pointer"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>Sign Out of All Sessions</span>
+              </button>
+            </div>
           </div>
         </div>
+
+        <!-- ─── Explicit Top Bar Sign Out Button ────────────────────────────── -->
+        <button
+          id="btn-top-logout"
+          class="inline-flex items-center gap-1.5 px-3 py-1 rounded border border-slate-300 bg-white hover:bg-rose-50 text-slate-700 hover:text-rose-700 hover:border-rose-300 text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
+          title="Sign out and destroy session"
+        >
+          <svg class="w-3.5 h-3.5 text-slate-500 hover:text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          <span class="hidden sm:inline">Sign Out</span>
+        </button>
 
       </div>
     </header>
@@ -307,26 +391,11 @@ const {
     </main>
   </div>
 
-  <!-- Global ERP Client-Side Script & Route Protection -->
+  <!-- Global ERP Client-Side Script & Dynamic Population -->
   <script is:inline>
-    // 1. Client-Side Auth Guard
-    function checkClientAuth() {
-      const path = window.location.pathname;
-      const isPublic = path === '/login' || path === '/register';
-      const token = localStorage.getItem('brightloop_token');
+    // 1. Populate Authenticated User Profile
+    function populateUserProfile() {
       const userRaw = localStorage.getItem('brightloop_user');
-
-      if (!token && !isPublic) {
-        window.location.href = `/login?redirect=${encodeURIComponent(path)}`;
-        return;
-      }
-
-      if (token && isPublic) {
-        window.location.href = '/';
-        return;
-      }
-
-      // Populate user info in UI
       if (userRaw) {
         try {
           const user = JSON.parse(userRaw);
@@ -354,11 +423,6 @@ const {
             if (navGroupConfig) navGroupConfig.style.display = 'none';
             if (btnNewSub) btnNewSub.style.display = 'none';
             if (btnBatchBill) btnBatchBill.style.display = 'none';
-
-            // If a customer accesses staff-only pages, redirect to /portal
-            if (path === '/' || path.startsWith('/catalog') || path.startsWith('/rules') || path === '/subscriptions/new') {
-              window.location.href = '/portal';
-            }
           }
         } catch (e) {
           console.error("Auth profile parse error", e);
@@ -366,7 +430,7 @@ const {
       }
     }
 
-    checkClientAuth();
+    populateUserProfile();
 
     // 2. Persona Switcher Toggle
     const roleBtn = document.getElementById('role-switch-btn');
@@ -408,9 +472,9 @@ const {
             }));
 
             if (data.role.toLowerCase() === 'customer') {
-              window.location.href = '/portal';
+              window.location.replace('/portal');
             } else {
-              window.location.reload();
+              window.location.replace('/');
             }
           }
         } catch (err) {
@@ -419,20 +483,41 @@ const {
       });
     });
 
-    // 4. Logout Handler
+    // 4. Session Destruction & Logout Handler
     async function logout() {
       try {
-        await fetch('http://localhost:8000/api/v1/auth/logout', { method: 'POST' });
-      } catch {}
+        await fetch('http://localhost:8000/api/v1/auth/logout', { 
+          method: 'POST',
+          credentials: 'include'
+        });
+      } catch (err) {
+        console.warn("Backend logout endpoint notification completed with note:", err);
+      }
+      
+      // Purge all tokens and cookies
+      document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
       document.cookie = 'access_token=; path=/; max-age=0; SameSite=Lax';
       localStorage.removeItem('brightloop_token');
       localStorage.removeItem('brightloop_user');
-      window.location.href = '/login';
+      sessionStorage.clear();
+
+      // Immediately redirect to /login
+      window.location.replace('/login');
     }
 
-    const btnLogout = document.getElementById('btn-sidebar-logout');
-    if (btnLogout) {
-      btnLogout.addEventListener('click', logout);
+    const btnTopLogout = document.getElementById('btn-top-logout');
+    if (btnTopLogout) {
+      btnTopLogout.addEventListener('click', logout);
+    }
+
+    const btnSidebarLogout = document.getElementById('btn-sidebar-logout');
+    if (btnSidebarLogout) {
+      btnSidebarLogout.addEventListener('click', logout);
+    }
+
+    const btnDropdownLogout = document.getElementById('btn-dropdown-logout');
+    if (btnDropdownLogout) {
+      btnDropdownLogout.addEventListener('click', logout);
     }
 
     // 5. Batch Billing Trigger

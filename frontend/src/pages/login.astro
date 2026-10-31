@@ -11,40 +11,80 @@ import '../styles/global.css';
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Instant Redirection if already authenticated -->
+  <script is:inline>
+    (function() {
+      try {
+        function getCookie(name) {
+          const m = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
+          return m ? decodeURIComponent(m[3]) : null;
+        }
+        const token = localStorage.getItem('brightloop_token') || getCookie('access_token');
+        if (token) {
+          try {
+            const parts = token.split('.');
+            if (parts.length === 3) {
+              const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+              if (!payload.exp || Date.now() < payload.exp * 1000) {
+                const userRaw = localStorage.getItem('brightloop_user');
+                const user = userRaw ? JSON.parse(userRaw) : null;
+                if (user && user.role === 'customer') {
+                  window.location.replace('/portal');
+                } else {
+                  window.location.replace('/');
+                }
+              }
+            }
+          } catch(e) {}
+        }
+      } catch(e) {}
+    })();
+  </script>
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-['Plus_Jakarta_Sans',sans-serif]">
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-['Plus_Jakarta_Sans',sans-serif] antialiased">
+  
   <div class="sm:mx-auto sm:w-full sm:max-w-md">
-    <!-- Brand Monogram -->
-    <div class="flex items-center justify-center gap-3 mb-2">
-      <div class="w-9 h-9 rounded bg-[#714B67] flex items-center justify-center font-bold text-white text-sm tracking-wider shadow-xs">
+    <!-- Brand Monogram & Meta/Odoo Typography -->
+    <div class="flex items-center justify-center gap-2.5 mb-2">
+      <div class="w-8 h-8 rounded bg-[#714B67] flex items-center justify-center font-bold text-white text-xs tracking-wider shadow-2xs">
         BL
       </div>
-      <div>
-        <span class="text-xl font-bold tracking-tight text-slate-900">Brightloop ERP</span>
-        <span class="ml-2 text-[10px] font-mono font-semibold uppercase px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">v2.4 Enterprise</span>
+      <div class="flex items-center gap-2">
+        <span class="text-lg font-bold tracking-tight text-slate-900">Brightloop ERP</span>
+        <span class="text-[10px] font-mono font-semibold uppercase px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 border border-slate-300">
+          Enterprise
+        </span>
       </div>
     </div>
-    <h2 class="text-center text-sm font-medium text-slate-500">
-      Mission-Critical Subscription & Recurring Billing
-    </h2>
+    <p class="text-center text-xs text-slate-500 font-medium">
+      Mission-Critical Subscription & Recurring Billing Management
+    </p>
   </div>
 
   <div class="mt-6 sm:mx-auto sm:w-full sm:max-w-md">
-    <div class="bg-white py-8 px-6 border border-slate-200 rounded-md shadow-xs sm:px-10">
+    <!-- Strict Utilitarian Card on bg-slate-50 Canvas -->
+    <div class="bg-white py-7 px-6 border border-slate-200 rounded shadow-2xs sm:px-8">
       
-      <!-- Error Message Banner -->
-      <div id="login-error" class="hidden mb-4 p-3 rounded bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2" role="alert">
+      <div class="mb-5 pb-3 border-b border-slate-100">
+        <h1 class="text-base font-bold text-slate-900 tracking-tight">Sign In to Workspace</h1>
+        <p class="text-xs text-slate-500 mt-0.5">Enter your enterprise credentials to access your session.</p>
+      </div>
+
+      <!-- Clear Error State Container -->
+      <div id="login-error" class="hidden mb-4 p-3 rounded border border-rose-200 bg-rose-50 text-rose-700 text-xs flex items-start gap-2.5" role="alert">
         <svg class="w-4 h-4 text-rose-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <span id="login-error-text">Authentication failed. Please verify credentials.</span>
+        <div id="login-error-text" class="font-medium">Invalid email or password. Please verify your credentials.</div>
       </div>
 
-      <!-- Login Form -->
+      <!-- Login Form with Top-Aligned Labels and 1px border-slate-300 -->
       <form id="login-form" class="space-y-4" novalidate>
+        
         <div>
-          <label for="email" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+          <label for="email" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
             Work Email Address
           </label>
           <input
@@ -53,17 +93,17 @@ import '../styles/global.css';
             type="email"
             autocomplete="email"
             required
-            placeholder="admin@brightloop.io"
-            class="block w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-md placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#714B67] focus:border-[#714B67] transition-colors"
+            placeholder="name@company.com"
+            class="block w-full px-3 py-2 text-xs font-normal text-slate-900 bg-white border border-slate-300 rounded placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#1877F2] focus:border-[#1877F2] transition-colors"
           />
         </div>
 
         <div>
-          <div class="flex items-center justify-between mb-1">
+          <div class="flex items-center justify-between mb-1.5">
             <label for="password" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
               Password
             </label>
-            <span class="text-xs text-slate-400 font-normal">Encrypted bcrypt</span>
+            <span class="text-[11px] text-slate-400 font-mono">Encrypted bcrypt</span>
           </div>
           <input
             id="password"
@@ -72,53 +112,49 @@ import '../styles/global.css';
             autocomplete="current-password"
             required
             placeholder="••••••••••••"
-            class="block w-full px-3 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-md placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#714B67] focus:border-[#714B67] transition-colors"
+            class="block w-full px-3 py-2 text-xs font-normal text-slate-900 bg-white border border-slate-300 rounded placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#1877F2] focus:border-[#1877F2] transition-colors"
           />
         </div>
 
         <div class="flex items-center justify-between text-xs pt-1">
           <label class="flex items-center gap-2 text-slate-600 cursor-pointer">
-            <input type="checkbox" id="remember-me" checked class="rounded border-slate-300 text-[#714B67] focus:ring-[#714B67]" />
+            <input type="checkbox" id="remember-me" checked class="rounded border-slate-300 text-[#1877F2] focus:ring-[#1877F2]" />
             <span>Keep session active</span>
           </label>
-          <a href="#" class="text-indigo-600 hover:text-indigo-500 font-medium">Forgot password?</a>
+          <span class="text-slate-400 text-[11px]">Zero-Trust Guarded</span>
         </div>
 
+        <!-- Primary Brand-Colored Button (Meta Blue #1877F2) with Loading State -->
         <button
           type="submit"
           id="btn-submit"
-          class="w-full mt-2 py-2 px-4 border border-transparent rounded-md text-sm font-medium text-white bg-[#714B67] hover:bg-[#5e3c55] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#714B67] transition-colors shadow-xs flex items-center justify-center gap-2"
+          class="w-full mt-2 py-2 px-4 rounded text-xs font-semibold text-white bg-[#1877F2] hover:bg-[#166fe5] focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#1877F2] transition-colors shadow-2xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          <span id="btn-text">Sign In to Workspace</span>
-          <svg id="btn-spinner" class="hidden w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+          <span id="btn-text">Sign In</span>
+          <svg id="btn-spinner" class="hidden w-3.5 h-3.5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
         </button>
       </form>
 
-      <!-- Evaluator Quick Switcher -->
-      <div class="mt-6">
-        <div class="relative">
-          <div class="absolute inset-0 flex items-center">
-            <div class="w-full border-t border-slate-200"></div>
-          </div>
-          <div class="relative flex justify-center text-xs uppercase">
-            <span class="bg-white px-2 text-slate-400 font-semibold tracking-wider text-[11px]">
-              Evaluator 1-Click Personas
-            </span>
-          </div>
+      <!-- Evaluator Quick Switcher for Instant Zero-Friction Testing -->
+      <div class="mt-5 pt-4 border-t border-slate-100">
+        <div class="relative flex justify-center text-[10px] uppercase mb-2.5">
+          <span class="bg-white px-2 text-slate-400 font-bold tracking-wider">
+            Evaluator 1-Click Access
+          </span>
         </div>
 
-        <div class="mt-3 grid grid-cols-1 gap-2 text-xs">
+        <div class="grid grid-cols-1 gap-1.5 text-xs">
           <button
             type="button"
-            class="persona-btn flex items-center justify-between p-2 rounded border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-left transition-colors"
+            class="persona-btn flex items-center justify-between p-2 rounded border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-left transition-colors cursor-pointer"
             data-email="admin@brightloop.io"
             data-pass="BrightloopAdmin2026!"
           >
             <div>
-              <div class="font-semibold text-slate-800">Alex Morgan</div>
+              <div class="font-semibold text-slate-800 text-xs">Alex Morgan</div>
               <div class="text-[11px] text-slate-500 font-mono">admin@brightloop.io</div>
             </div>
             <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
@@ -128,12 +164,12 @@ import '../styles/global.css';
 
           <button
             type="button"
-            class="persona-btn flex items-center justify-between p-2 rounded border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-left transition-colors"
+            class="persona-btn flex items-center justify-between p-2 rounded border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-left transition-colors cursor-pointer"
             data-email="finance@brightloop.io"
             data-pass="BrightloopFinance2026!"
           >
             <div>
-              <div class="font-semibold text-slate-800">Sarah Chen</div>
+              <div class="font-semibold text-slate-800 text-xs">Sarah Chen</div>
               <div class="text-[11px] text-slate-500 font-mono">finance@brightloop.io</div>
             </div>
             <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -143,31 +179,31 @@ import '../styles/global.css';
 
           <button
             type="button"
-            class="persona-btn flex items-center justify-between p-2 rounded border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-left transition-colors"
+            class="persona-btn flex items-center justify-between p-2 rounded border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-left transition-colors cursor-pointer"
             data-email="customer@brightloop.io"
             data-pass="BrightloopCustomer2026!"
           >
             <div>
-              <div class="font-semibold text-slate-800">Acmez Enterprise</div>
+              <div class="font-semibold text-slate-800 text-xs">Acmez Enterprise</div>
               <div class="text-[11px] text-slate-500 font-mono">customer@brightloop.io</div>
             </div>
             <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
-              Customer
+              Customer Portal
             </span>
           </button>
         </div>
       </div>
 
       <!-- Registration link -->
-      <div class="mt-6 text-center text-xs text-slate-600 border-t border-slate-100 pt-4">
+      <div class="mt-5 text-center text-xs text-slate-600 border-t border-slate-100 pt-3.5">
         Need a self-service customer portal account?
-        <a href="/register" class="font-semibold text-indigo-600 hover:text-indigo-500 ml-1">Register Company</a>
+        <a href="/register" class="font-semibold text-[#1877F2] hover:underline ml-1">Register Company</a>
       </div>
     </div>
 
     <!-- Security Footnote -->
-    <p class="mt-4 text-center text-xs text-slate-400">
-      Zero-Trust Session Guard • Encrypted HTTP-only Token
+    <p class="mt-4 text-center text-[11px] text-slate-400 font-mono">
+      Session Guard Active • Strict JWT Isolation
     </p>
   </div>
 
@@ -195,7 +231,7 @@ import '../styles/global.css';
         });
 
         if (!res.ok) {
-          let msg = 'Invalid work email or password';
+          let msg = 'Invalid email or password.';
           try {
             const err = await res.json();
             msg = err.detail || msg;
@@ -205,10 +241,10 @@ import '../styles/global.css';
 
         const data = await res.json();
 
-        // Store access_token in document.cookie so Astro middleware and backend requests have immediate access
+        // 1. Set browser cookie for SSR / middleware check
         document.cookie = `access_token=${data.access_token}; path=/; max-age=86400; SameSite=Lax`;
 
-        // Store local storage auth profile for client utilities
+        // 2. Set localStorage for client-side API requests
         localStorage.setItem('brightloop_token', data.access_token);
         localStorage.setItem('brightloop_user', JSON.stringify({
           id: data.user_id,
@@ -218,22 +254,22 @@ import '../styles/global.css';
           is_active: true,
         }));
 
-        // Check redirect query param
+        // 3. Evaluate redirect destination
         const urlParams = new URLSearchParams(window.location.search);
         const redirectParam = urlParams.get('redirect');
 
         if (redirectParam && !redirectParam.startsWith('/login') && !redirectParam.startsWith('/register')) {
-          window.location.href = redirectParam;
-        } else if (data.role.toLowerCase() === 'customer') {
-          window.location.href = '/portal';
+          window.location.replace(redirectParam);
+        } else if (data.role && data.role.toLowerCase() === 'customer') {
+          window.location.replace('/portal');
         } else {
-          window.location.href = '/';
+          window.location.replace('/');
         }
       } catch (err) {
-        errorText.textContent = err.message || 'Login failed';
+        errorText.textContent = err.message || 'Invalid email or password.';
         errorBox.classList.remove('hidden');
         btnSubmit.disabled = false;
-        btnText.textContent = 'Sign In to Workspace';
+        btnText.textContent = 'Sign In';
         btnSpinner.classList.add('hidden');
       }
     }

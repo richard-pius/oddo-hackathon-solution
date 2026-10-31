@@ -72,6 +72,8 @@ async def generate_invoice_for_subscription(
     )
     if existing.scalar_one_or_none() is not None:
         logger.info(f"Skipping {sub.subscription_number}: invoice already exists for {period_start}")
+        # Invariant: If invoice already exists for this period, advance next_billing_date to prevent re-billing loops
+        sub.next_billing_date = compute_next_billing_date(period_start, sub.plan.billing_interval)
         return None
 
     invoice_number = await generate_invoice_number(db)
@@ -210,13 +212,10 @@ async def run_billing_batch(billing_date: date | None = None):
 
     logger.info(f"🔄 Billing batch starting for date {today}")
 
-    offset = 0
+    processed_sub_ids = set()
     while True:
         async with async_session_factory() as db:
-            # Why FOR UPDATE SKIP LOCKED: if a staff member triggered a manual
-            # billing run while the cron is mid-flight, the manual run grabs
-            # the next unlocked batch instead of deadlocking or double-billing.
-            result = await db.execute(
+            query = (
                 select(Subscription)
                 .options(
                     selectinload(Subscription.lines),
@@ -226,15 +225,23 @@ async def run_billing_batch(billing_date: date | None = None):
                     Subscription.status == SubscriptionStatus.ACTIVE,
                     Subscription.next_billing_date <= today,
                 )
-                .with_for_update(skip_locked=True)
-                .limit(batch_size)
             )
+            if processed_sub_ids:
+                query = query.where(Subscription.id.not_in(processed_sub_ids))
+
+            dialect_name = db.bind.dialect.name if db.bind else ""
+            if dialect_name == "postgresql":
+                query = query.with_for_update(skip_locked=True)
+
+            query = query.limit(batch_size)
+            result = await db.execute(query)
             subs = result.scalars().all()
 
             if not subs:
                 break
 
             for sub in subs:
+                processed_sub_ids.add(sub.id)
                 try:
                     invoice = await generate_invoice_for_subscription(sub, sub.lines, db, today)
                     if invoice:
@@ -270,7 +277,6 @@ async def run_billing_batch(billing_date: date | None = None):
                     continue
 
             await db.commit()
-            offset += batch_size
 
     logger.info(
         f"✅ Billing batch complete: {total_generated} invoices generated, "

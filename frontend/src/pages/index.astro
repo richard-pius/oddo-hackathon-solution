@@ -261,11 +261,11 @@ import Layout from '../layouts/Layout.astro';
 
         if (mrrEl) mrrEl.textContent = formatUSD(d.mrr);
         if (arrEl) arrEl.textContent = formatUSD(d.arr);
-        if (activeSubsEl) activeSubsEl.textContent = String(d.active_subscriptions_count);
+        if (activeSubsEl) activeSubsEl.textContent = String(d.active_subscriptions_count ?? d.active_subscriptions ?? 0);
         if (outstandingEl) outstandingEl.textContent = formatUSD(d.total_outstanding);
-        if (overdueCountEl) overdueCountEl.textContent = String(d.overdue_invoices_count);
+        if (overdueCountEl) overdueCountEl.textContent = String(d.overdue_invoices_count ?? d.overdue_invoice_count ?? 0);
         if (totalRevEl) totalRevEl.textContent = formatUSD(d.total_revenue_collected);
-        if (draftInvEl) draftInvEl.textContent = String(d.draft_invoices_count);
+        if (draftInvEl) draftInvEl.textContent = String(d.draft_invoices_count ?? d.draft_invoice_count ?? 0);
       }
 
       // 2. Fetch Recent Subscriptions

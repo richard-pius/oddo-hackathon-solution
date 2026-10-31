@@ -1,29 +1,33 @@
 import { defineMiddleware } from 'astro:middleware';
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  // If prerendering at build time, skip runtime cookie header inspection
+  // In static prerendering mode at build time, do not touch request headers to avoid build warnings
   if (context.isPrerendered) {
     return next();
   }
 
   const { pathname } = context.url;
 
-  // Public assets and authentication endpoints
+  // Public routes: login, register, and static assets
   const isPublic =
     pathname === '/login' ||
     pathname === '/register' ||
-    pathname.startsWith('/api/') ||
     pathname.startsWith('/_astro/') ||
-    pathname === '/favicon.svg' ||
+    pathname.startsWith('/favicon') ||
     pathname.endsWith('.png') ||
-    pathname.endsWith('.ico');
+    pathname.endsWith('.ico') ||
+    pathname.endsWith('.svg') ||
+    pathname.endsWith('.css') ||
+    pathname.endsWith('.js');
 
-  // Enforce server-side route guards during dev/server execution
-  if (!isPublic) {
-    const token = context.cookies?.get('access_token')?.value;
-    if (!token) {
-      return context.redirect(`/login?redirect=${encodeURIComponent(pathname)}`);
-    }
+  if (isPublic) {
+    return next();
+  }
+
+  // Enforce server-side route guards during runtime server/dev request execution
+  const token = context.cookies.get('access_token')?.value;
+  if (!token) {
+    return context.redirect(`/login?redirect=${encodeURIComponent(pathname)}`);
   }
 
   return next();

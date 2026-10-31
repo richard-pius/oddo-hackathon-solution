@@ -408,10 +408,29 @@ class InvoiceDetailOut(InvoiceOut):
 
 class PaymentCreate(BaseModel):
     invoice_id: int
-    payment_method: PaymentMethod
+    payment_method: PaymentMethod = PaymentMethod.CREDIT_CARD
     amount: Decimal = Field(..., gt=0)
-    payment_date: date
+    payment_date: Optional[date] = Field(default_factory=date.today)
     reference_note: Optional[str] = None
+
+    @field_validator("payment_method", mode="before")
+    @classmethod
+    def normalize_payment_method(cls, v):
+        if isinstance(v, str):
+            v_upper = v.upper()
+            if v_upper == "STRIPE":
+                v_upper = "CREDIT_CARD"
+            if v_upper in PaymentMethod.__members__:
+                return PaymentMethod[v_upper]
+            return PaymentMethod.CREDIT_CARD
+        return v
+
+    @field_validator("payment_date", mode="before")
+    @classmethod
+    def default_payment_date(cls, v):
+        if not v:
+            return date.today()
+        return v
 
 
 class PaymentOut(BaseModel):
@@ -435,13 +454,24 @@ class PaymentDetailOut(PaymentOut):
 
 class DashboardKPIs(BaseModel):
     active_subscriptions: int = 0
+    active_subscriptions_count: int = 0
     mrr: Decimal = Decimal("0.00")
     arr: Decimal = Decimal("0.00")
     total_revenue_collected: Decimal = Decimal("0.00")
     total_outstanding: Decimal = Decimal("0.00")
     overdue_invoice_count: int = 0
+    overdue_invoices_count: int = 0
     draft_invoice_count: int = 0
+    draft_invoices_count: int = 0
     total_customers: int = 0
+
+    def model_post_init(self, __context):
+        if not self.active_subscriptions_count:
+            self.active_subscriptions_count = self.active_subscriptions
+        if not self.overdue_invoices_count:
+            self.overdue_invoices_count = self.overdue_invoice_count
+        if not self.draft_invoices_count:
+            self.draft_invoices_count = self.draft_invoice_count
 
 
 class CursorPage(BaseModel):

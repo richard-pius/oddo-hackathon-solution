@@ -29,6 +29,7 @@ from app.services.continuous_stream import event_broadcaster
 router = APIRouter(prefix="/api/v1/payments", tags=["Payments"])
 
 
+@router.post("", response_model=PaymentOut, status_code=201, include_in_schema=False)
 @router.post("/", response_model=PaymentOut, status_code=201)
 async def record_payment(
     data: PaymentCreate,
@@ -106,6 +107,7 @@ async def record_payment(
     return payment
 
 
+@router.get("", response_model=dict, include_in_schema=False)
 @router.get("/", response_model=dict)
 async def list_payments(
     cursor: int = Query(0, ge=0),

@@ -277,8 +277,15 @@ async def create_subscription_from_template(
     db.add(audit)
 
     await db.commit()
-    await db.refresh(sub)
-    return sub
+    fresh_result = await db.execute(
+        select(Subscription)
+        .options(
+            selectinload(Subscription.lines),
+            selectinload(Subscription.plan),
+        )
+        .where(Subscription.id == sub.id)
+    )
+    return fresh_result.scalar_one()
 
 
 async def transition_subscription(
@@ -332,5 +339,13 @@ async def transition_subscription(
     db.add(audit)
 
     await db.commit()
-    await db.refresh(sub)
-    return sub
+    # Re-fetch with lines and plan loaded to prevent MissingGreenlet error during Pydantic serialization
+    fresh_result = await db.execute(
+        select(Subscription)
+        .options(
+            selectinload(Subscription.lines),
+            selectinload(Subscription.plan),
+        )
+        .where(Subscription.id == sub.id)
+    )
+    return fresh_result.scalar_one()
