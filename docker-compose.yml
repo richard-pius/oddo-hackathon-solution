@@ -1,0 +1,63 @@
+version: "3.9"
+
+# Why we pin exact Postgres major version and use named volumes:
+# Billing data is financial-grade. A surprise PG major-version bump during
+# `docker-compose pull` could corrupt WAL format. Named volumes survive
+# `docker-compose down` so dev seed data persists between sessions.
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: brightloop_db
+    environment:
+      POSTGRES_USER: brightloop
+      POSTGRES_PASSWORD: brightloop_secret
+      POSTGRES_DB: brightloop
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U brightloop"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: brightloop_api
+    environment:
+      DATABASE_URL: postgresql+asyncpg://brightloop:brightloop_secret@db:5432/brightloop
+      DATABASE_URL_SYNC: postgresql://brightloop:brightloop_secret@db:5432/brightloop
+      SECRET_KEY: "brightloop-dev-secret-change-in-prod-2026"
+      CORS_ORIGINS: "http://localhost:4321,http://localhost:3000"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    command: >
+      sh -c "alembic upgrade head && python seed_brightloop.py && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: brightloop_ui
+    environment:
+      PUBLIC_API_URL: "http://localhost:8000"
+    ports:
+      - "4321:4321"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0
+
+volumes:
+  pgdata:

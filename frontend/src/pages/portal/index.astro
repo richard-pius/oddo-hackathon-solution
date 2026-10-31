@@ -1,0 +1,333 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Customer Self-Service Portal — Brightloop ERP" activeNav="portal">
+  <div class="max-w-5xl mx-auto space-y-6">
+    <!-- Header with 1-Click Switch to Customer Role -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+      <div>
+        <div class="flex items-center gap-3">
+          <h1 class="text-2xl font-extrabold text-white tracking-tight">Customer Self-Service Portal</h1>
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+            Tenant View
+          </span>
+        </div>
+        <p class="text-xs text-slate-400 mt-1">
+          Review your active software subscriptions, upcoming renewal dates, and settle invoices with instant card checkout.
+        </p>
+      </div>
+
+      <button 
+        id="btn-login-customer-demo" 
+        class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 text-xs font-semibold border border-slate-700 transition-colors"
+      >
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+        <span>View as Customer (Acmez)</span>
+      </button>
+    </div>
+
+    <!-- Active Subscription Banner Cards -->
+    <div class="space-y-3">
+      <div class="flex items-center justify-between">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400">Your Active Subscriptions</h2>
+        <span class="text-xs text-indigo-400 font-mono" id="portal-sub-count">... Active</span>
+      </div>
+
+      <div id="portal-subs-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="text-xs text-slate-400 py-8 text-center col-span-2">Loading your subscriptions...</div>
+      </div>
+    </div>
+
+    <!-- Invoices & Billing Statements -->
+    <div class="space-y-3 pt-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400">Invoices & Billing Statements</h2>
+        <span class="text-xs text-amber-400 font-mono font-bold" id="portal-due-summary">Outstanding: $0.00</span>
+      </div>
+
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 shadow-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-950/70 border-b border-slate-800 font-bold uppercase tracking-wider text-[10px] text-slate-400">
+              <tr>
+                <th class="py-3 px-4">Invoice #</th>
+                <th class="py-3 px-4">Issue Date</th>
+                <th class="py-3 px-4">Due Date</th>
+                <th class="py-3 px-4">Total Amount</th>
+                <th class="py-3 px-4">Balance Due</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="portal-invoices-table" class="divide-y divide-slate-800/60 font-medium">
+              <tr>
+                <td colspan="7" class="py-10 text-center text-slate-400">Loading invoices...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instant Card Checkout Modal -->
+  <div id="portal-pay-modal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold">
+            💳
+          </div>
+          <div>
+            <h3 class="font-bold text-white text-base">Instant Invoice Checkout</h3>
+            <p class="text-xs text-slate-400">Secured with 256-bit PCI-DSS encryption</p>
+          </div>
+        </div>
+        <button id="btn-close-portal-pay" class="text-slate-400 hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1 font-mono text-xs">
+        <div class="flex justify-between text-slate-400">
+          <span>Invoice To Pay:</span>
+          <span class="text-white font-bold" id="modal-inv-id">INV-...</span>
+        </div>
+        <div class="flex justify-between text-slate-400">
+          <span>Total Balance Due:</span>
+          <span class="text-emerald-400 font-extrabold text-sm" id="modal-inv-due">$0.00</span>
+        </div>
+      </div>
+
+      <!-- Card details form -->
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-300 mb-1">Cardholder Name</label>
+          <input type="text" id="pay-card-name" value="Acmez Billing Department" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500" />
+        </div>
+        <div>
+          <label class="block font-bold text-slate-300 mb-1">Card Number</label>
+          <div class="relative">
+            <input type="text" id="pay-card-number" value="4242 •••• •••• 4242" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 font-mono text-white focus:outline-none focus:border-emerald-500" />
+            <span class="absolute right-3 top-2 text-[10px] font-bold uppercase text-indigo-400">VISA</span>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-300 mb-1">Expiry</label>
+            <input type="text" value="12/28" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 font-mono text-white text-center focus:outline-none focus:border-emerald-500" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-300 mb-1">CVC / CVV</label>
+            <input type="text" value="888" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 font-mono text-white text-center focus:outline-none focus:border-emerald-500" />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+        <button id="btn-cancel-portal-pay" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">
+          Cancel
+        </button>
+        <button id="btn-submit-portal-pay" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/30">
+          Authorize & Pay Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import { apiFetch, loginAs, API_URL } from '../../lib/api';
+
+    let currentSelectedInvoice: any = null;
+
+    async function loadPortal() {
+      const [subsRes, invsRes] = await Promise.all([
+        apiFetch<any>('/api/v1/subscriptions?limit=10'),
+        apiFetch<any>('/api/v1/billing/invoices?limit=20'),
+      ]);
+
+      // Subscriptions
+      const subsBox = document.getElementById('portal-subs-container')!;
+      const subCount = document.getElementById('portal-sub-count')!;
+
+      if (subsRes.data?.items) {
+        subCount.textContent = `${subsRes.data.items.length} Contracts`;
+        if (subsRes.data.items.length === 0) {
+          subsBox.innerHTML = '<div class="text-xs text-slate-400 py-8 text-center col-span-2">No active subscriptions found for this account.</div>';
+        } else {
+          subsBox.innerHTML = subsRes.data.items.map((s: any) => `
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="font-mono font-bold text-white text-sm">${s.subscription_number}</div>
+                  <div class="text-xs text-slate-400">${s.plan_name || 'Enterprise'} Plan</div>
+                </div>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                  ${s.status}
+                </span>
+              </div>
+
+              <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80 grid grid-cols-2 gap-2 text-xs font-mono">
+                <div>
+                  <div class="text-[10px] text-slate-500 font-sans">Recurring Fee</div>
+                  <div class="font-bold text-emerald-400 text-sm">${formatUSD(s.total_recurring)}</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-500 font-sans">Next Auto-Renewal</div>
+                  <div class="font-bold text-white">${s.next_billing_date || 'N/A'}</div>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between text-xs pt-1">
+                <span class="text-slate-400 text-[11px]">Billed every ${s.billing_interval || 'Month'}</span>
+                <a href="/subscriptions/${s.id}" class="text-indigo-400 hover:text-indigo-300 font-semibold">
+                  Manage Contract &rarr;
+                </a>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      // Invoices
+      const invTable = document.getElementById('portal-invoices-table')!;
+      const dueSummary = document.getElementById('portal-due-summary')!;
+
+      if (invsRes.data?.items) {
+        let totalDue = 0;
+        invsRes.data.items.forEach((i: any) => totalDue += Number(i.amount_due || 0));
+        dueSummary.textContent = `Outstanding Balance: ${formatUSD(totalDue)}`;
+
+        if (invsRes.data.items.length === 0) {
+          invTable.innerHTML = '<tr><td colspan="7" class="py-10 text-center text-slate-400">No invoices recorded yet.</td></tr>';
+        } else {
+          invTable.innerHTML = invsRes.data.items.map((i: any) => `
+            <tr class="hover:bg-slate-800/40 transition-colors">
+              <td class="py-3 px-4 font-mono font-bold text-white">
+                <a href="/invoices/${i.id}" class="hover:text-indigo-400 underline decoration-indigo-500/40">
+                  ${i.invoice_number}
+                </a>
+              </td>
+              <td class="py-3 px-4 font-mono text-slate-400">${i.issue_date}</td>
+              <td class="py-3 px-4 font-mono text-slate-400">${i.due_date}</td>
+              <td class="py-3 px-4 font-mono font-bold text-white">${formatUSD(i.total_amount)}</td>
+              <td class="py-3 px-4 font-mono font-bold ${i.amount_due > 0 ? 'text-amber-400' : 'text-slate-500'}">${formatUSD(i.amount_due)}</td>
+              <td class="py-3 px-4">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getInvoiceClass(i.status)}">
+                  ${i.status}
+                </span>
+              </td>
+              <td class="py-3 px-4 text-right flex items-center justify-end gap-2">
+                <a 
+                  href="${API_URL}/api/v1/billing/invoices/${i.id}/pdf" 
+                  target="_blank" 
+                  class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-[11px] border border-slate-700"
+                >
+                  PDF
+                </a>
+                ${i.amount_due > 0 ? `
+                  <button 
+                    class="btn-portal-pay px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-md shadow-emerald-600/30"
+                    data-inv='${JSON.stringify(i)}'
+                  >
+                    Pay ${formatUSD(i.amount_due)}
+                  </button>
+                ` : `
+                  <span class="px-2 py-1 text-[11px] text-emerald-400 font-bold">Paid</span>
+                `}
+              </td>
+            </tr>
+          `).join('');
+
+          document.querySelectorAll('.btn-portal-pay').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const raw = (e.currentTarget as HTMLElement).dataset.inv!;
+              openCheckoutModal(JSON.parse(raw));
+            });
+          });
+        }
+      }
+    }
+
+    function formatUSD(val: number): string {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+    }
+
+    function getInvoiceClass(status: string): string {
+      const map: Record<string, string> = {
+        draft: 'bg-slate-800 text-slate-400 border-slate-700',
+        confirmed: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
+        posted: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
+        paid: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+        partially_paid: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+        overdue: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+        cancelled: 'bg-slate-800 text-slate-400 border-slate-700',
+      };
+      return map[status?.toLowerCase()] || map.draft;
+    }
+
+    // Modal
+    const modal = document.getElementById('portal-pay-modal')!;
+    const closeBtn = document.getElementById('btn-close-portal-pay')!;
+    const cancelBtn = document.getElementById('btn-cancel-portal-pay')!;
+
+    function openCheckoutModal(inv: any) {
+      currentSelectedInvoice = inv;
+      document.getElementById('modal-inv-id')!.textContent = inv.invoice_number;
+      document.getElementById('modal-inv-due')!.textContent = formatUSD(inv.amount_due);
+      modal.classList.remove('hidden');
+    }
+
+    closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+    cancelBtn.addEventListener('click', () => modal.classList.add('hidden'));
+
+    document.getElementById('btn-submit-portal-pay')?.addEventListener('click', async () => {
+      if (!currentSelectedInvoice) return;
+
+      const btn = document.getElementById('btn-submit-portal-pay') as HTMLButtonElement;
+      btn.disabled = true;
+      btn.textContent = 'Processing Payment...';
+
+      const payload = {
+        invoice_id: currentSelectedInvoice.id,
+        amount: currentSelectedInvoice.amount_due,
+        payment_method: 'credit_card',
+        payment_date: new Date().toISOString().split('T')[0],
+        reference_note: `Card Checkout: Visa *4242 by ${currentSelectedInvoice.customer_name || 'Customer'}`,
+      };
+
+      const res = await apiFetch<any>('/api/v1/payments', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+
+      btn.disabled = false;
+      btn.textContent = 'Authorize & Pay Now';
+
+      if (res.data) {
+        modal.classList.add('hidden');
+        (window as any).showToast('Payment Successful', `Invoice ${currentSelectedInvoice.invoice_number} is now settled!`, 'success');
+        loadPortal();
+      } else {
+        (window as any).showToast('Payment Failed', res.error || 'Card authorization failed', 'error');
+      }
+    });
+
+    // 1-Click Persona Switch
+    document.getElementById('btn-login-customer-demo')?.addEventListener('click', async () => {
+      const ok = await loginAs('customer@brightloop.io', 'BrightloopCustomer2026!');
+      if (ok) {
+        (window as any).showToast('Switched Persona', 'Now viewing as Acmez Enterprise Customer', 'success');
+        setTimeout(() => window.location.reload(), 400);
+      }
+    });
+
+    // Refresh on SSE
+    window.addEventListener('brightloop:sse', () => {
+      loadPortal();
+    });
+
+    loadPortal();
+  </script>
+</Layout>

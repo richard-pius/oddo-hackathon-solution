@@ -1,0 +1,11 @@
+{
+  "python.defaultInterpreterPath": "D:\\programs\\Python\\Python312\\python.exe",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/backend"
+  ],
+  "python.autoComplete.extraPaths": [
+    "${workspaceFolder}/backend"
+  ],
+  "python.analysis.indexing": true,
+  "python.analysis.typeCheckingMode": "basic"
+}

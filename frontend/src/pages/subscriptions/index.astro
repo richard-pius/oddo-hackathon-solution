@@ -1,0 +1,245 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Subscriptions — Brightloop ERP" activeNav="subscriptions">
+  <div class="space-y-6">
+    <!-- Header & Action Row -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+      <div>
+        <div class="flex items-center gap-3">
+          <h1 class="text-2xl font-extrabold text-white tracking-tight">Subscriptions Management</h1>
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20" id="total-badge">
+            ... Contracts
+          </span>
+        </div>
+        <p class="text-xs text-slate-400 mt-1">
+          Full lifecycle subscription contracts with Odoo state machine, prorated modifications, and automated billing.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a 
+          href="/subscriptions/new" 
+          class="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-lg shadow-indigo-600/30"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          <span>Create Subscription</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Filter Pipeline & Search -->
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-2xl border border-slate-800">
+      <!-- Status Tabs (Odoo style) -->
+      <div class="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0" id="filter-tabs">
+        <button class="status-tab-btn active px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition-colors" data-status="">
+          All Subscriptions
+        </button>
+        <button class="status-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors" data-status="quotation">
+          Quotations
+        </button>
+        <button class="status-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors" data-status="confirmed">
+          Confirmed
+        </button>
+        <button class="status-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors" data-status="active">
+          Active
+        </button>
+        <button class="status-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors" data-status="paused">
+          Paused
+        </button>
+        <button class="status-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors" data-status="cancelled">
+          Cancelled
+        </button>
+      </div>
+
+      <!-- Search Input -->
+      <div class="relative w-full sm:w-64">
+        <input 
+          type="text" 
+          id="search-input" 
+          placeholder="Search by contract or customer..." 
+          class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+        />
+        <svg class="w-3.5 h-3.5 text-slate-500 absolute right-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+      </div>
+    </div>
+
+    <!-- Subscriptions Table -->
+    <div class="rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-300">
+          <thead class="bg-slate-950/70 border-b border-slate-800 font-bold uppercase tracking-wider text-[10px] text-slate-400">
+            <tr>
+              <th class="py-3 px-4">Contract #</th>
+              <th class="py-3 px-4">Customer</th>
+              <th class="py-3 px-4">Plan</th>
+              <th class="py-3 px-4">Billing Interval</th>
+              <th class="py-3 px-4">Start Date</th>
+              <th class="py-3 px-4">Next Billing</th>
+              <th class="py-3 px-4">Recurring Total</th>
+              <th class="py-3 px-4">Status</th>
+              <th class="py-3 px-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="subscriptions-table" class="divide-y divide-slate-800/60 font-medium">
+            <tr>
+              <td colspan="9" class="py-12 text-center text-slate-400">Loading subscriptions list...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination / Footer Info -->
+      <div class="p-4 border-t border-slate-800 bg-slate-950/40 flex items-center justify-between text-xs text-slate-400">
+        <span id="page-info">Showing 0 of 0 subscriptions</span>
+        <div class="flex items-center gap-2">
+          <button id="btn-prev-page" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 disabled:opacity-40" disabled>Previous</button>
+          <button id="btn-next-page" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 disabled:opacity-40" disabled>Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import { apiFetch } from '../../lib/api';
+
+    let currentStatus = '';
+    let searchQuery = '';
+    let currentPage = 1;
+    const pageSize = 15;
+
+    async function fetchSubscriptions() {
+      const table = document.getElementById('subscriptions-table');
+      if (table) {
+        table.innerHTML = '<tr><td colspan="9" class="py-12 text-center text-slate-400">Loading subscriptions...</td></tr>';
+      }
+
+      let url = `/api/v1/subscriptions?page=${currentPage}&limit=${pageSize}`;
+      if (currentStatus) url += `&status=${currentStatus}`;
+      if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
+
+      const res = await apiFetch<any>(url);
+      if (!res.data || !res.data.items) {
+        if (table) table.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-rose-400">Error: ${res.error || 'Failed to load'}</td></tr>`;
+        return;
+      }
+
+      const totalBadge = document.getElementById('total-badge');
+      const pageInfo = document.getElementById('page-info');
+      const prevBtn = document.getElementById('btn-prev-page') as HTMLButtonElement;
+      const nextBtn = document.getElementById('btn-next-page') as HTMLButtonElement;
+
+      if (totalBadge) totalBadge.textContent = `${res.data.total} Contracts`;
+      if (pageInfo) pageInfo.textContent = `Showing ${res.data.items.length} of ${res.data.total} subscriptions`;
+      if (prevBtn) prevBtn.disabled = currentPage <= 1;
+      if (nextBtn) nextBtn.disabled = currentPage * pageSize >= res.data.total;
+
+      if (table) {
+        if (res.data.items.length === 0) {
+          table.innerHTML = '<tr><td colspan="9" class="py-12 text-center text-slate-400">No subscriptions matched your filter criteria.</td></tr>';
+          return;
+        }
+
+        table.innerHTML = res.data.items.map((sub: any) => `
+          <tr class="hover:bg-slate-800/40 transition-colors">
+            <td class="py-3 px-4 font-mono font-bold text-white">
+              <a href="/subscriptions/${sub.id}" class="hover:text-indigo-400 underline decoration-indigo-500/40">
+                ${sub.subscription_number}
+              </a>
+            </td>
+            <td class="py-3 px-4">
+              <div class="font-bold text-slate-100">${sub.customer_name || 'Customer #' + sub.customer_id}</div>
+              <div class="text-[10px] text-slate-400">${sub.customer_email || ''}</div>
+            </td>
+            <td class="py-3 px-4">
+              <span class="px-2 py-0.5 rounded text-[11px] bg-slate-800 text-slate-300 font-mono">${sub.plan_name || 'Standard'}</span>
+            </td>
+            <td class="py-3 px-4 capitalize font-mono text-slate-400">${sub.billing_interval || 'Month'}</td>
+            <td class="py-3 px-4 font-mono text-slate-400">${sub.start_date || 'N/A'}</td>
+            <td class="py-3 px-4 font-mono font-bold text-indigo-300">${sub.next_billing_date || 'N/A'}</td>
+            <td class="py-3 px-4 font-mono font-bold text-emerald-400">${formatUSD(sub.total_recurring)}</td>
+            <td class="py-3 px-4">
+              ${getStatusBadge(sub.status)}
+            </td>
+            <td class="py-3 px-4 text-right">
+              <a 
+                href="/subscriptions/${sub.id}" 
+                class="px-3 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-xs font-semibold border border-indigo-500/30 transition-colors"
+              >
+                Form View
+              </a>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function formatUSD(val: number | string | null | undefined): string {
+      const num = Number(val || 0);
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+    }
+
+    function getStatusBadge(status: string): string {
+      const map: Record<string, string> = {
+        draft: 'bg-slate-800 text-slate-400 border-slate-700',
+        quotation: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+        confirmed: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
+        active: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+        paused: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+        cancelled: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+        closed: 'bg-slate-800 text-slate-400 border-slate-700',
+      };
+      const cls = map[status.toLowerCase()] || map.draft;
+      return `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${cls}">${status}</span>`;
+    }
+
+    // Filter tab clicks
+    document.querySelectorAll('.status-tab-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.status-tab-btn').forEach(b => {
+          b.classList.remove('bg-indigo-600', 'text-white', 'active');
+          b.classList.add('text-slate-400');
+        });
+        const target = e.currentTarget as HTMLElement;
+        target.classList.add('bg-indigo-600', 'text-white', 'active');
+        target.classList.remove('text-slate-400');
+
+        currentStatus = target.dataset.status || '';
+        currentPage = 1;
+        fetchSubscriptions();
+      });
+    });
+
+    // Search input
+    let searchTimeout: any;
+    document.getElementById('search-input')?.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        searchQuery = (e.target as HTMLInputElement).value;
+        currentPage = 1;
+        fetchSubscriptions();
+      }, 300);
+    });
+
+    // Pagination
+    document.getElementById('btn-prev-page')?.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        fetchSubscriptions();
+      }
+    });
+
+    document.getElementById('btn-next-page')?.addEventListener('click', () => {
+      currentPage++;
+      fetchSubscriptions();
+    });
+
+    // Refresh on SSE
+    window.addEventListener('brightloop:sse', () => {
+      fetchSubscriptions();
+    });
+
+    fetchSubscriptions();
+  </script>
+</Layout>

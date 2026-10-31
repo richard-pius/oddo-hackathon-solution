@@ -1,0 +1,677 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+export function getStaticPaths() {
+  return [
+    { params: { id: '1' } },
+    { params: { id: '2' } },
+    { params: { id: '3' } },
+    { params: { id: '4' } },
+    { params: { id: '5' } },
+    { params: { id: '6' } },
+  ];
+}
+
+const { id } = Astro.params;
+---
+
+<Layout title={`Subscription Details — Brightloop ERP`} activeNav="subscriptions">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <!-- Breadcrumb & Top Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+      <nav class="flex items-center gap-2 text-xs text-slate-400">
+        <a href="/" class="hover:text-white">Dashboard</a>
+        <span>/</span>
+        <a href="/subscriptions" class="hover:text-white">Subscriptions</a>
+        <span>/</span>
+        <span class="text-indigo-400 font-mono font-bold" id="bc-sub-num">SUB-...</span>
+      </nav>
+
+      <!-- Status Pipeline Ribbon (Odoo chevron style) -->
+      <div class="status-ribbon self-start sm:self-auto" id="pipeline-ribbon">
+        <div class="status-step" data-step="draft">1. Draft</div>
+        <div class="status-step" data-step="quotation">2. Quotation</div>
+        <div class="status-step" data-step="confirmed">3. Confirmed</div>
+        <div class="status-step" data-step="active">4. Active</div>
+        <div class="status-step" data-step="paused">Paused</div>
+        <div class="status-step" data-step="closed">Closed</div>
+      </div>
+    </div>
+
+    <!-- ERP Action Toolbar (State Machine Control Buttons) -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 shadow-lg flex flex-wrap items-center justify-between gap-3">
+      <div class="flex flex-wrap items-center gap-2" id="action-buttons-container">
+        <!-- Buttons injected dynamically based on current status -->
+        <span class="text-xs text-slate-400 font-mono">Loading lifecycle actions...</span>
+      </div>
+
+      <!-- Quick Action Utilities -->
+      <div class="flex items-center gap-2">
+        <button 
+          id="btn-open-prorate-modal" 
+          class="hidden items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 text-xs font-semibold border border-cyan-500/30 transition-colors"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+          <span>Prorated Upgrade (Seats)</span>
+        </button>
+
+        <button 
+          id="btn-manual-invoice" 
+          class="hidden items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"></path></svg>
+          <span>Generate Invoice Now</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Contract Master Card -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+      <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-slate-800 pb-5">
+        <div>
+          <div class="flex items-center gap-3">
+            <h1 class="text-2xl font-black text-white tracking-tight font-mono" id="sub-number">...</h1>
+            <span id="sub-status-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider">
+              ...
+            </span>
+          </div>
+          <div class="text-sm font-semibold text-slate-300 mt-1" id="sub-customer-name">...</div>
+          <div class="text-xs text-slate-500" id="sub-customer-email">...</div>
+        </div>
+
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/80 text-right font-mono">
+          <div class="text-[10px] uppercase tracking-wider text-slate-400 font-sans">Recurring Commitment</div>
+          <div class="text-2xl font-black text-emerald-400" id="sub-total-recurring">$0.00</div>
+          <div class="text-[11px] text-slate-400 capitalize" id="sub-interval-text">Every Month</div>
+        </div>
+      </div>
+
+      <!-- Key Dates & Master Parameters Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono">
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80">
+          <div class="text-slate-400 font-sans text-[10px] uppercase">Plan</div>
+          <div class="text-white font-bold text-sm mt-0.5" id="sub-plan-name">...</div>
+        </div>
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80">
+          <div class="text-slate-400 font-sans text-[10px] uppercase">Start Date</div>
+          <div class="text-slate-200 font-bold mt-0.5" id="sub-start-date">...</div>
+        </div>
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80">
+          <div class="text-slate-400 font-sans text-[10px] uppercase">Next Billing Date</div>
+          <div class="text-indigo-400 font-bold mt-0.5" id="sub-next-billing">...</div>
+        </div>
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80">
+          <div class="text-slate-400 font-sans text-[10px] uppercase">Payment Terms</div>
+          <div class="text-slate-200 font-bold mt-0.5" id="sub-payment-terms">Net 30</div>
+        </div>
+      </div>
+
+      <!-- Tab Navigation (Odoo ERP Form Layout) -->
+      <div>
+        <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+          <button class="tab-btn active px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white" data-tab="tab-lines">
+            Order Lines (<span id="count-lines">0</span>)
+          </button>
+          <button class="tab-btn px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white" data-tab="tab-invoices">
+            Invoices & Receipts (<span id="count-invoices">0</span>)
+          </button>
+          <button class="tab-btn px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white" data-tab="tab-chatter">
+            Audit Trail & Chatter (<span id="count-audit">0</span>)
+          </button>
+        </div>
+
+        <!-- TAB 1: Order Lines -->
+        <div id="tab-lines" class="tab-pane pt-4 space-y-4">
+          <div class="overflow-x-auto rounded-xl border border-slate-800">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="bg-slate-950 font-bold uppercase tracking-wider text-[10px] text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="py-2.5 px-3">Description</th>
+                  <th class="py-2.5 px-3">Qty</th>
+                  <th class="py-2.5 px-3">Unit Price</th>
+                  <th class="py-2.5 px-3">Discount</th>
+                  <th class="py-2.5 px-3">Tax</th>
+                  <th class="py-2.5 px-3 text-right">Line Total</th>
+                </tr>
+              </thead>
+              <tbody id="lines-tbody" class="divide-y divide-slate-800/60 font-medium">
+                <!-- Lines injected -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="flex justify-end pt-2">
+            <div class="w-72 bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 text-xs">
+              <div class="flex justify-between text-slate-400">
+                <span>Subtotal:</span>
+                <span class="font-mono text-white font-bold" id="fin-subtotal">$0.00</span>
+              </div>
+              <div class="flex justify-between text-slate-400">
+                <span>Discount:</span>
+                <span class="font-mono text-emerald-400 font-bold" id="fin-discount">-$0.00</span>
+              </div>
+              <div class="flex justify-between text-slate-400">
+                <span>Taxes:</span>
+                <span class="font-mono text-white font-bold" id="fin-tax">$0.00</span>
+              </div>
+              <div class="border-t border-slate-800 pt-2 flex justify-between text-sm">
+                <span class="font-bold text-white">Total Recurring:</span>
+                <span class="font-mono text-emerald-400 font-extrabold" id="fin-total">$0.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: Invoices -->
+        <div id="tab-invoices" class="tab-pane hidden pt-4 space-y-4">
+          <div class="overflow-x-auto rounded-xl border border-slate-800">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="bg-slate-950 font-bold uppercase tracking-wider text-[10px] text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="py-2.5 px-3">Invoice #</th>
+                  <th class="py-2.5 px-3">Issue Date</th>
+                  <th class="py-2.5 px-3">Due Date</th>
+                  <th class="py-2.5 px-3">Total Amount</th>
+                  <th class="py-2.5 px-3">Amount Due</th>
+                  <th class="py-2.5 px-3">Status</th>
+                  <th class="py-2.5 px-3 text-right">PDF Download</th>
+                </tr>
+              </thead>
+              <tbody id="invoices-tbody" class="divide-y divide-slate-800/60 font-medium">
+                <!-- Invoices injected -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB 3: Audit Trail & Chatter -->
+        <div id="tab-chatter" class="tab-pane hidden pt-4 space-y-4">
+          <!-- Chatter Input Box -->
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+            <div class="text-xs font-bold text-white uppercase tracking-wider">Log Contract Activity / Note</div>
+            <textarea 
+              id="chatter-input" 
+              rows="2" 
+              placeholder="Add domain note, pricing exception, or billing correspondence..." 
+              class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            ></textarea>
+            <div class="flex justify-end">
+              <button id="btn-post-chatter" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30">
+                Post Note
+              </button>
+            </div>
+          </div>
+
+          <!-- Chatter Feed -->
+          <div id="chatter-feed" class="chatter-feed space-y-4 pt-2">
+            <!-- Chatter logs injected -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prorated Seat Upgrade Modal -->
+  <div id="prorate-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-cyan-600/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-white text-base">Prorated Seat Expansion</h3>
+            <p class="text-xs text-slate-400">Mid-cycle seat increase with immediate pro-rata invoice.</p>
+          </div>
+        </div>
+        <button id="btn-close-prorate" class="text-slate-400 hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-slate-300 mb-1">Select Subscription Line Item</label>
+          <select id="prorate-line-select" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-300 mb-1">Current Seats</label>
+            <input type="text" id="prorate-current-seats" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 font-mono text-slate-400" value="0" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-300 mb-1">New Total Seats</label>
+            <input type="number" id="prorate-new-seats" min="1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 font-mono text-white focus:outline-none focus:border-cyan-500" value="1" />
+          </div>
+        </div>
+
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 font-mono">
+          <div class="flex justify-between text-slate-400">
+            <span>Days Remaining in Cycle:</span>
+            <span class="text-white font-bold" id="prorate-days-remaining">15 days</span>
+          </div>
+          <div class="flex justify-between text-slate-400">
+            <span>Additional Recurring/Mo:</span>
+            <span class="text-white font-bold" id="prorate-additional-mrr">$0.00</span>
+          </div>
+          <div class="border-t border-slate-800 pt-2 flex justify-between text-sm">
+            <span class="text-white font-bold font-sans">Immediate Prorated Invoice:</span>
+            <span class="text-emerald-400 font-extrabold" id="prorate-invoice-amount">$0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+        <button id="btn-cancel-prorate" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">
+          Cancel
+        </button>
+        <button id="btn-submit-prorate" class="px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-lg shadow-cyan-600/30">
+          Confirm Upgrade & Invoice
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import { apiFetch, API_URL } from '../../lib/api';
+
+    // Parse ID from URL pathname
+    const parts = window.location.pathname.split('/');
+    const subId = Number(parts[parts.length - 1] || parts[parts.length - 2]);
+
+    let subscriptionData: any = null;
+
+    async function loadSubscription() {
+      if (!subId || isNaN(subId)) return;
+
+      const [subRes, invsRes, auditRes] = await Promise.all([
+        apiFetch<any>(`/api/v1/subscriptions/${subId}`),
+        apiFetch<any>(`/api/v1/billing/invoices?subscription_id=${subId}`),
+        apiFetch<any>(`/api/v1/subscriptions/${subId}/audit`),
+      ]);
+
+      if (!subRes.data) {
+        (window as any).showToast('Error', subRes.error || 'Subscription not found', 'error');
+        return;
+      }
+
+      subscriptionData = subRes.data;
+      renderHeaderAndPipeline(subRes.data);
+      renderActionButtons(subRes.data);
+      renderLines(subRes.data);
+      renderInvoices(invsRes.data?.items || []);
+      renderAuditFeed(auditRes.data || []);
+    }
+
+    function renderHeaderAndPipeline(sub: any) {
+      document.getElementById('bc-sub-num')!.textContent = sub.subscription_number;
+      document.getElementById('sub-number')!.textContent = sub.subscription_number;
+      document.getElementById('sub-customer-name')!.textContent = sub.customer_name || `Customer #${sub.customer_id}`;
+      document.getElementById('sub-customer-email')!.textContent = sub.customer_email || '';
+      document.getElementById('sub-total-recurring')!.textContent = formatUSD(sub.total_recurring || 0);
+      document.getElementById('sub-interval-text')!.textContent = `Every ${sub.billing_interval || 'Month'}`;
+      document.getElementById('sub-plan-name')!.textContent = sub.plan_name || 'Enterprise';
+      document.getElementById('sub-start-date')!.textContent = sub.start_date || 'N/A';
+      document.getElementById('sub-next-billing')!.textContent = sub.next_billing_date || 'N/A';
+      document.getElementById('sub-payment-terms')!.textContent = sub.payment_terms || 'Net 30';
+
+      // Badge
+      const badge = document.getElementById('sub-status-badge')!;
+      badge.textContent = sub.status;
+      badge.className = `px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border ${getStatusClass(sub.status)}`;
+
+      // Odoo Status Ribbon
+      const order = ['draft', 'quotation', 'confirmed', 'active', 'paused', 'closed'];
+      const currentIdx = order.indexOf(sub.status.toLowerCase());
+      document.querySelectorAll('.status-step').forEach(step => {
+        const stepName = (step as HTMLElement).dataset.step || '';
+        const stepIdx = order.indexOf(stepName);
+        step.className = 'status-step';
+        if (stepName === sub.status.toLowerCase()) {
+          step.classList.add('active');
+        } else if (stepIdx < currentIdx && currentIdx !== -1) {
+          step.classList.add('completed');
+        }
+      });
+    }
+
+    function renderActionButtons(sub: any) {
+      const container = document.getElementById('action-buttons-container')!;
+      container.innerHTML = '';
+
+      const prorateBtn = document.getElementById('btn-open-prorate-modal')!;
+      const manualInvBtn = document.getElementById('btn-manual-invoice')!;
+
+      prorateBtn.classList.add('hidden');
+      manualInvBtn.classList.add('hidden');
+
+      const s = sub.status.toLowerCase();
+
+      if (s === 'draft') {
+        container.innerHTML = `
+          <button class="btn-transition px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30" data-target="quotation">
+            Send Quotation
+          </button>
+          <button class="btn-transition px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold" data-target="confirmed">
+            Confirm Order
+          </button>
+          <button class="btn-transition px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-rose-300 text-xs font-semibold" data-target="cancelled">
+            Cancel
+          </button>
+        `;
+      } else if (s === 'quotation') {
+        container.innerHTML = `
+          <button class="btn-transition px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/30" data-target="confirmed">
+            Confirm Order
+          </button>
+          <button class="btn-transition px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-rose-300 text-xs font-semibold" data-target="cancelled">
+            Cancel
+          </button>
+        `;
+      } else if (s === 'confirmed') {
+        container.innerHTML = `
+          <button class="btn-transition px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/30" data-target="active">
+            Activate Subscription
+          </button>
+          <button class="btn-transition px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-rose-300 text-xs font-semibold" data-target="cancelled">
+            Cancel
+          </button>
+        `;
+      } else if (s === 'active') {
+        prorateBtn.classList.remove('hidden');
+        prorateBtn.classList.add('flex');
+        manualInvBtn.classList.remove('hidden');
+        manualInvBtn.classList.add('flex');
+
+        container.innerHTML = `
+          <button class="btn-transition px-3.5 py-1.5 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 text-xs font-semibold" data-target="paused">
+            Pause Contract
+          </button>
+          <button class="btn-transition px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold" data-target="closed">
+            Close Contract
+          </button>
+          <button class="btn-transition px-3 py-1.5 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 text-xs font-semibold" data-target="cancelled">
+            Cancel
+          </button>
+        `;
+      } else if (s === 'paused') {
+        container.innerHTML = `
+          <button class="btn-transition px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold" data-target="active">
+            Resume Subscription
+          </button>
+          <button class="btn-transition px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-rose-300 text-xs font-semibold" data-target="cancelled">
+            Cancel
+          </button>
+        `;
+      }
+
+      // Attach transition click events
+      document.querySelectorAll('.btn-transition').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const targetStatus = (e.currentTarget as HTMLElement).dataset.target!;
+          const res = await apiFetch<any>(`/api/v1/subscriptions/${subId}/transition`, {
+            method: 'POST',
+            body: JSON.stringify({ target_status: targetStatus, notes: `State changed to ${targetStatus}` }),
+          });
+
+          if (res.data) {
+            (window as any).showToast('Lifecycle State Updated', `Contract transitioned to ${targetStatus.toUpperCase()}`, 'success');
+            loadSubscription();
+          } else {
+            (window as any).showToast('Transition Error', res.error || 'Failed', 'error');
+          }
+        });
+      });
+    }
+
+    function renderLines(sub: any) {
+      const tbody = document.getElementById('lines-tbody')!;
+      const countEl = document.getElementById('count-lines')!;
+      const lines = sub.lines || [];
+      countEl.textContent = String(lines.length);
+
+      if (lines.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-400">No line items.</td></tr>';
+      } else {
+        tbody.innerHTML = lines.map((l: any) => `
+          <tr class="hover:bg-slate-800/30 transition-colors">
+            <td class="py-2.5 px-3 font-semibold text-white">${l.description}</td>
+            <td class="py-2.5 px-3 font-mono font-bold text-slate-200">${l.quantity}</td>
+            <td class="py-2.5 px-3 font-mono text-slate-300">${formatUSD(l.unit_price)}</td>
+            <td class="py-2.5 px-3 font-mono text-emerald-400">-${formatUSD(l.discount_amount || 0)}</td>
+            <td class="py-2.5 px-3 font-mono text-slate-400">${formatUSD(l.tax_amount || 0)}</td>
+            <td class="py-2.5 px-3 font-mono font-bold text-emerald-400 text-right">${formatUSD(l.total_amount || l.subtotal || 0)}</td>
+          </tr>
+        `).join('');
+      }
+
+      document.getElementById('fin-subtotal')!.textContent = formatUSD(sub.subtotal || 0);
+      document.getElementById('fin-discount')!.textContent = `-${formatUSD(sub.discount_total || 0)}`;
+      document.getElementById('fin-tax')!.textContent = formatUSD(sub.tax_total || 0);
+      document.getElementById('fin-total')!.textContent = formatUSD(sub.total_recurring || 0);
+    }
+
+    function renderInvoices(invoices: any[]) {
+      const tbody = document.getElementById('invoices-tbody')!;
+      const countEl = document.getElementById('count-invoices')!;
+      countEl.textContent = String(invoices.length);
+
+      if (invoices.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-6 text-center text-slate-400">No invoices generated for this subscription yet.</td></tr>';
+      } else {
+        tbody.innerHTML = invoices.map((inv: any) => `
+          <tr class="hover:bg-slate-800/30 transition-colors">
+            <td class="py-2.5 px-3 font-mono font-bold text-white">
+              <a href="/invoices/${inv.id}" class="hover:text-indigo-400 underline decoration-indigo-500/40">
+                ${inv.invoice_number}
+              </a>
+            </td>
+            <td class="py-2.5 px-3 font-mono text-slate-400">${inv.issue_date}</td>
+            <td class="py-2.5 px-3 font-mono text-slate-400">${inv.due_date}</td>
+            <td class="py-2.5 px-3 font-mono font-bold text-white">${formatUSD(inv.total_amount)}</td>
+            <td class="py-2.5 px-3 font-mono font-bold ${inv.amount_due > 0 ? 'text-amber-400' : 'text-slate-400'}">${formatUSD(inv.amount_due)}</td>
+            <td class="py-2.5 px-3">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getInvoiceClass(inv.status)}">
+                ${inv.status}
+              </span>
+            </td>
+            <td class="py-2.5 px-3 text-right">
+              <a 
+                href="${API_URL}/api/v1/billing/invoices/${inv.id}/pdf" 
+                target="_blank" 
+                class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-[11px] border border-slate-700"
+              >
+                PDF Receipt
+              </a>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function renderAuditFeed(audits: any[]) {
+      const feed = document.getElementById('chatter-feed')!;
+      const countEl = document.getElementById('count-audit')!;
+      countEl.textContent = String(audits.length);
+
+      if (audits.length === 0) {
+        feed.innerHTML = '<div class="text-xs text-slate-400 italic">No activity recorded yet.</div>';
+      } else {
+        feed.innerHTML = audits.map((a: any) => `
+          <div class="relative pl-6 pb-2">
+            <div class="absolute -left-[7px] top-1.5 w-3 h-3 rounded-full bg-indigo-500 ring-4 ring-[#0b0f19]"></div>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80">
+              <div class="flex items-center justify-between text-[11px] mb-1">
+                <span class="font-bold text-indigo-300">${a.reason?.includes('💬') ? 'User Chatter' : 'State Transition'}</span>
+                <span class="font-mono text-slate-500">${new Date(a.changed_at).toLocaleString()}</span>
+              </div>
+              <div class="text-xs text-slate-200">${a.reason || 'Status updated'}</div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function formatUSD(val: number): string {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+    }
+
+    function getStatusClass(status: string): string {
+      const map: Record<string, string> = {
+        draft: 'bg-slate-800 text-slate-400 border-slate-700',
+        quotation: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+        confirmed: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
+        active: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+        paused: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+        cancelled: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+        closed: 'bg-slate-800 text-slate-400 border-slate-700',
+      };
+      return map[status?.toLowerCase()] || map.draft;
+    }
+
+    function getInvoiceClass(status: string): string {
+      const map: Record<string, string> = {
+        draft: 'bg-slate-800 text-slate-400 border-slate-700',
+        posted: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
+        paid: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+        partially_paid: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+        overdue: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+        cancelled: 'bg-slate-800 text-slate-400 border-slate-700',
+      };
+      return map[status?.toLowerCase()] || map.draft;
+    }
+
+    // Tab Switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.classList.remove('bg-indigo-600', 'text-white', 'active');
+          b.classList.add('text-slate-400');
+        });
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+
+        const target = e.currentTarget as HTMLElement;
+        target.classList.add('bg-indigo-600', 'text-white', 'active');
+        target.classList.remove('text-slate-400');
+
+        const tabId = target.dataset.tab!;
+        document.getElementById(tabId)?.classList.remove('hidden');
+      });
+    });
+
+    // Chatter Submission
+    document.getElementById('btn-post-chatter')?.addEventListener('click', async () => {
+      const input = document.getElementById('chatter-input') as HTMLTextAreaElement;
+      const text = input.value.trim();
+      if (!text) return;
+
+      const res = await apiFetch<any>(`/api/v1/subscriptions/${subId}/chatter`, {
+        method: 'POST',
+        body: JSON.stringify({ message: text }),
+      });
+
+      if (res.data) {
+        input.value = '';
+        (window as any).showToast('Chatter Posted', 'Note appended to audit trail', 'success');
+        loadSubscription();
+      } else {
+        (window as any).showToast('Error', res.error || 'Failed to post', 'error');
+      }
+    });
+
+    // Manual Invoice Generation
+    document.getElementById('btn-manual-invoice')?.addEventListener('click', async () => {
+      const res = await apiFetch<any>(`/api/v1/billing/subscriptions/${subId}/invoice`, {
+        method: 'POST',
+      });
+
+      if (res.data) {
+        (window as any).showToast('Invoice Created', `Generated ${res.data.invoice_number}`, 'success');
+        loadSubscription();
+      } else {
+        (window as any).showToast('Notice', res.error || 'Invoice may already exist for this period', 'info');
+      }
+    });
+
+    // Prorated Upgrade Modal Logic
+    const prorateModal = document.getElementById('prorate-modal')!;
+    const openProrateBtn = document.getElementById('btn-open-prorate-modal')!;
+    const closeProrateBtn = document.getElementById('btn-close-prorate')!;
+    const cancelProrateBtn = document.getElementById('btn-cancel-prorate')!;
+    const lineSelect = document.getElementById('prorate-line-select') as HTMLSelectElement;
+    const currentSeatsInput = document.getElementById('prorate-current-seats') as HTMLInputElement;
+    const newSeatsInput = document.getElementById('prorate-new-seats') as HTMLInputElement;
+
+    openProrateBtn.addEventListener('click', () => {
+      if (!subscriptionData?.lines || subscriptionData.lines.length === 0) return;
+      lineSelect.innerHTML = subscriptionData.lines.map((l: any) => `
+        <option value="${l.id}" data-qty="${l.quantity}" data-price="${l.unit_price}">
+          ${l.description} (${l.quantity} seats @ ${formatUSD(l.unit_price)}/mo)
+        </option>
+      `).join('');
+
+      updateProratePreview();
+      prorateModal.classList.remove('hidden');
+    });
+
+    function updateProratePreview() {
+      const opt = lineSelect.selectedOptions[0];
+      if (!opt) return;
+      const currentQty = Number(opt.dataset.qty || 1);
+      const unitPrice = Number(opt.dataset.price || 0);
+      currentSeatsInput.value = String(currentQty);
+
+      const newQty = Math.max(1, Number(newSeatsInput.value || currentQty + 1));
+      const delta = Math.max(0, newQty - currentQty);
+
+      // Remaining days estimate
+      const daysRemaining = 15; // standard mid-cycle
+      const ratio = daysRemaining / 30;
+      const addlMrr = delta * unitPrice;
+      const proratedInvoice = addlMrr * ratio;
+
+      document.getElementById('prorate-additional-mrr')!.textContent = `+${formatUSD(addlMrr)}/mo`;
+      document.getElementById('prorate-invoice-amount')!.textContent = formatUSD(proratedInvoice);
+    }
+
+    lineSelect.addEventListener('change', () => {
+      const opt = lineSelect.selectedOptions[0];
+      if (opt) {
+        newSeatsInput.value = String(Number(opt.dataset.qty || 1) + 5);
+        updateProratePreview();
+      }
+    });
+
+    newSeatsInput.addEventListener('input', updateProratePreview);
+
+    closeProrateBtn.addEventListener('click', () => prorateModal.classList.add('hidden'));
+    cancelProrateBtn.addEventListener('click', () => prorateModal.classList.add('hidden'));
+
+    document.getElementById('btn-submit-prorate')?.addEventListener('click', async () => {
+      const lineId = Number(lineSelect.value);
+      const newQty = Number(newSeatsInput.value);
+
+      const res = await apiFetch<any>(`/api/v1/subscriptions/${subId}/prorate`, {
+        method: 'POST',
+        body: JSON.stringify({ line_id: lineId, new_quantity: newQty }),
+      });
+
+      if (res.data) {
+        prorateModal.classList.add('hidden');
+        (window as any).showToast(
+          'Upgrade Confirmed', 
+          `Prorated Invoice ${res.data.invoice_number || ''} generated for $${res.data.prorated_amount.toFixed(2)}`, 
+          'success'
+        );
+        loadSubscription();
+      } else {
+        (window as any).showToast('Error', res.error || 'Upgrade failed', 'error');
+      }
+    });
+
+    loadSubscription();
+  </script>
+</Layout>

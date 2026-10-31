@@ -1,0 +1,209 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Product Catalog & Variants (+560) — Brightloop ERP" activeNav="catalog">
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+      <div>
+        <div class="flex items-center gap-3">
+          <h1 class="text-2xl font-extrabold text-white tracking-tight">Products & Variant Matrices</h1>
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+            Attribute Modifiers
+          </span>
+        </div>
+        <p class="text-xs text-slate-400 mt-1">
+          Master catalog with Odoo brand variant price modifiers (+$560.00), recurring services, and consumption metrics.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button 
+          id="btn-open-new-product" 
+          class="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-lg shadow-indigo-600/30"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          <span>New Catalog Item</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Products & Variants Display -->
+    <div id="catalog-container" class="space-y-4">
+      <div class="text-center py-12 text-slate-400 text-xs">Loading product catalog and variant matrices...</div>
+    </div>
+  </div>
+
+  <!-- New Product Modal -->
+  <div id="modal-product" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="font-bold text-white text-base">Add New Catalog Product</h3>
+        <button id="btn-close-prod-modal" class="text-slate-400 hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-300 mb-1">Product Name</label>
+          <input type="text" id="new-prod-name" placeholder="e.g. Odoo Community Connector" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500" />
+        </div>
+        <div>
+          <label class="block font-bold text-slate-300 mb-1">Product Code / SKU</label>
+          <input type="text" id="new-prod-code" placeholder="e.g. ODOO-CONN-01" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-indigo-500" />
+        </div>
+        <div>
+          <label class="block font-bold text-slate-300 mb-1">Product Type</label>
+          <select id="new-prod-type" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
+            <option value="service">Service (Recurring SaaS)</option>
+            <option value="consumable">Consumable</option>
+            <option value="storable">Storable Asset</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-300 mb-1">Base Price ($)</label>
+          <input type="number" step="0.01" id="new-prod-price" placeholder="499.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 font-mono text-white focus:outline-none focus:border-indigo-500" />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+        <button id="btn-cancel-prod" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">
+          Cancel
+        </button>
+        <button id="btn-save-prod" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30">
+          Save Product
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import { apiFetch } from '../../lib/api';
+
+    async function loadCatalog() {
+      const res = await apiFetch<any>('/api/v1/catalog/products');
+      const container = document.getElementById('catalog-container');
+      if (!container) return;
+
+      if (!res.data) {
+        container.innerHTML = `<div class="text-rose-400 py-8 text-center text-xs">Error: ${res.error || 'Failed to load catalog'}</div>`;
+        return;
+      }
+
+      if (res.data.length === 0) {
+        container.innerHTML = `<div class="text-slate-400 py-12 text-center text-xs">No catalog products configured.</div>`;
+        return;
+      }
+
+      container.innerHTML = res.data.map((prod: any) => {
+        const variants = prod.variants || [];
+        return `
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+              <div>
+                <div class="flex items-center gap-2.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                  <h3 class="text-base font-bold text-white">${prod.name}</h3>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700">${prod.code}</span>
+                  <span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">${prod.product_type}</span>
+                </div>
+                <p class="text-xs text-slate-400 mt-1">${prod.description || 'Standard subscription product module'}</p>
+              </div>
+
+              <div class="text-left sm:text-right font-mono">
+                <div class="text-[10px] text-slate-400 uppercase font-sans">Base Price</div>
+                <div class="text-lg font-black text-white">${formatUSD(prod.base_price)}</div>
+              </div>
+            </div>
+
+            <!-- Variants Table -->
+            <div class="space-y-2">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                <span>Configured Variants & Price Extra (${variants.length})</span>
+                <span class="text-indigo-400 font-mono text-[10px]">Variant Surcharge</span>
+              </div>
+
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/60">
+                <table class="w-full text-left text-xs text-slate-300 font-mono">
+                  <thead class="bg-slate-950 font-bold uppercase tracking-wider text-[10px] text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th class="py-2 px-3">Variant SKU</th>
+                      <th class="py-2 px-3">Attributes Matrix</th>
+                      <th class="py-2 px-3">Price Extra</th>
+                      <th class="py-2 px-3 text-right">Effective Sub Total</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60 font-medium">
+                    <tr class="hover:bg-slate-800/30">
+                      <td class="py-2 px-3 text-slate-400">DEFAULT-STD</td>
+                      <td class="py-2 px-3 font-sans text-slate-400">Standard Baseline (No attributes)</td>
+                      <td class="py-2 px-3 text-slate-400">+$0.00</td>
+                      <td class="py-2 px-3 text-right font-bold text-white">${formatUSD(prod.base_price)}</td>
+                    </tr>
+                    ${variants.map((v: any) => {
+                      const attrStr = Object.entries(v.attributes || {}).map(([k, val]) => `<span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 border border-slate-700">${k}: <strong class="text-indigo-300">${val}</strong></span>`).join(' ');
+                      const extra = Number(v.price_extra || 0);
+                      const effective = Number(prod.base_price) + extra;
+                      return `
+                        <tr class="hover:bg-slate-800/30">
+                          <td class="py-2 px-3 font-bold text-cyan-300">${v.sku}</td>
+                          <td class="py-2 px-3 font-sans">${attrStr}</td>
+                          <td class="py-2 px-3 font-bold text-emerald-400">+${formatUSD(extra)}</td>
+                          <td class="py-2 px-3 text-right font-bold text-emerald-300">${formatUSD(effective)}</td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function formatUSD(val: number): string {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+    }
+
+    // Modal
+    const modal = document.getElementById('modal-product')!;
+    document.getElementById('btn-open-new-product')?.addEventListener('click', () => modal.classList.remove('hidden'));
+    document.getElementById('btn-close-prod-modal')?.addEventListener('click', () => modal.classList.add('hidden'));
+    document.getElementById('btn-cancel-prod')?.addEventListener('click', () => modal.classList.add('hidden'));
+
+    document.getElementById('btn-save-prod')?.addEventListener('click', async () => {
+      const name = (document.getElementById('new-prod-name') as HTMLInputElement).value;
+      const code = (document.getElementById('new-prod-code') as HTMLInputElement).value;
+      const type = (document.getElementById('new-prod-type') as HTMLSelectElement).value;
+      const price = Number((document.getElementById('new-prod-price') as HTMLInputElement).value);
+
+      if (!name || !code) {
+        (window as any).showToast('Error', 'Name and Code are required', 'error');
+        return;
+      }
+
+      const res = await apiFetch<any>('/api/v1/catalog/products', {
+        method: 'POST',
+        body: JSON.stringify({
+          name,
+          code,
+          product_type: type,
+          base_price: price,
+        }),
+      });
+
+      if (res.data) {
+        modal.classList.add('hidden');
+        (window as any).showToast('Product Created', `Added ${name} to catalog`, 'success');
+        loadCatalog();
+      } else {
+        (window as any).showToast('Error', res.error || 'Failed to create product', 'error');
+      }
+    });
+
+    loadCatalog();
+  </script>
+</Layout>

@@ -1,0 +1,450 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  activeNav?: string;
+}
+
+const { title = 'Brightloop ERP — Subscription Management', activeNav = 'dashboard' } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="bg-[#0b0f19] text-slate-100 min-h-screen flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
+  <!-- Top Enterprise Navigation Bar -->
+  <header class="h-16 border-b border-slate-800 bg-[#0f172a]/90 backdrop-blur sticky top-0 z-40 px-4 lg:px-6 flex items-center justify-between">
+    <div class="flex items-center gap-6">
+      <a href="/" class="flex items-center gap-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 p-0.5 shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+          <div class="w-full h-full bg-[#0f172a] rounded-[10px] flex items-center justify-center font-black text-cyan-400 text-lg tracking-wider">
+            BL
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">Brightloop</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">ERP v2.4</span>
+          </div>
+          <span class="text-xs text-slate-400 block -mt-1 font-medium">Subscription & Recurring Billing</span>
+        </div>
+      </a>
+
+      <!-- Realtime SSE Status Badge -->
+      <div id="sse-badge" class="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300">
+        <span class="relative flex h-2 w-2">
+          <span id="sse-pulse" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span id="sse-dot" class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <span id="sse-text" class="font-mono text-[11px] text-slate-300">SSE Live Stream</span>
+        <span id="sse-event-count" class="px-1.5 py-0.2 bg-emerald-950 text-emerald-300 border border-emerald-800/40 rounded text-[10px] font-mono">0</span>
+      </div>
+    </div>
+
+    <!-- Right Header Actions -->
+    <div class="flex items-center gap-3">
+      <!-- Batch Billing Run Shortcut Button -->
+      <button 
+        id="btn-run-batch-billing" 
+        class="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs font-semibold transition-all hover:border-indigo-400 shadow-sm"
+        title="Run zero-double-billing nightly invoice generator"
+      >
+        <svg class="w-3.5 h-3.5 animate-spin-reverse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+        <span>Trigger Billing Batch</span>
+      </button>
+
+      <!-- Create New Subscription -->
+      <a 
+        href="/subscriptions/new" 
+        class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-all shadow-md shadow-indigo-600/30"
+      >
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        <span>New Subscription</span>
+      </a>
+
+      <!-- Fast Role Switcher Dropdown (Odoo Style) -->
+      <div class="relative" id="role-menu-container">
+        <button 
+          id="role-switch-btn" 
+          class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700/70 border border-slate-700 text-xs text-slate-200 transition-colors"
+        >
+          <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-amber-500 to-indigo-600 flex items-center justify-center font-bold text-[11px] text-white" id="avatar-letters">
+            AM
+          </div>
+          <div class="text-left hidden sm:block">
+            <div class="font-semibold text-white leading-tight" id="active-user-name">Alex Morgan</div>
+            <div class="text-[10px] text-indigo-400 capitalize" id="active-user-role">Administrator</div>
+          </div>
+          <svg class="w-3.5 h-3.5 text-slate-400 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+
+        <!-- Dropdown menu -->
+        <div id="role-dropdown" class="hidden absolute right-0 mt-2 w-64 rounded-xl bg-slate-900 border border-slate-800 shadow-2xl p-2 z-50 text-xs">
+          <div class="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800">
+            Switch Demo Persona (1-Click)
+          </div>
+          <div class="py-1 flex flex-col gap-1">
+            <button class="role-switch-option flex items-center justify-between w-full p-2 rounded-lg hover:bg-slate-800 text-left transition-colors" data-email="admin@brightloop.io" data-pass="BrightloopAdmin2026!">
+              <div>
+                <div class="font-semibold text-slate-100">Alex Morgan</div>
+                <div class="text-[10px] text-slate-400">admin@brightloop.io</div>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300">Admin</span>
+            </button>
+            <button class="role-switch-option flex items-center justify-between w-full p-2 rounded-lg hover:bg-slate-800 text-left transition-colors" data-email="finance@brightloop.io" data-pass="BrightloopFinance2026!">
+              <div>
+                <div class="font-semibold text-slate-100">Sarah Chen</div>
+                <div class="text-[10px] text-slate-400">finance@brightloop.io</div>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300">Finance</span>
+            </button>
+            <button class="role-switch-option flex items-center justify-between w-full p-2 rounded-lg hover:bg-slate-800 text-left transition-colors" data-email="customer@brightloop.io" data-pass="BrightloopCustomer2026!">
+              <div>
+                <div class="font-semibold text-slate-100">Acmez Enterprise</div>
+                <div class="text-[10px] text-slate-400">customer@brightloop.io</div>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300">Customer</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View Container with Sidebar -->
+  <div class="flex-1 flex overflow-hidden">
+    <!-- Left Navigation Sidebar -->
+    <aside class="w-64 border-r border-slate-800/80 bg-[#0d1322] flex flex-col shrink-0">
+      <div class="p-4 border-b border-slate-800/60">
+        <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Workspace</div>
+        <div class="px-3 py-2 rounded-lg bg-slate-800/50 border border-slate-700/60 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+            <span class="text-xs font-semibold text-slate-200">Main Billing Ledger</span>
+          </div>
+          <span class="text-[10px] font-mono text-slate-400">USD $</span>
+        </div>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 py-1">Core Modules</div>
+        
+        <a href="/" class={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${activeNav === 'dashboard' ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30' : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'}`}>
+          <div class="flex items-center gap-2.5">
+            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            <span>Executive Dashboard</span>
+          </div>
+          <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+        </a>
+
+        <a href="/subscriptions" class={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${activeNav === 'subscriptions' ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30' : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'}`}>
+          <div class="flex items-center gap-2.5">
+            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+            <span>Subscriptions</span>
+          </div>
+          <span id="nav-subs-count" class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700">...</span>
+        </a>
+
+        <a href="/invoices" class={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${activeNav === 'invoices' ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30' : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'}`}>
+          <div class="flex items-center gap-2.5">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z"></path></svg>
+            <span>Invoices & Billing</span>
+          </div>
+          <span id="nav-invoices-count" class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700">...</span>
+        </a>
+
+        <a href="/payments" class={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${activeNav === 'payments' ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30' : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'}`}>
+          <div class="flex items-center gap-2.5">
+            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+            <span>Payments & Ledger</span>
+          </div>
+        </a>
+
+        <div class="pt-4 text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 py-1">Configuration & Master Data</div>
+
+        <a href="/catalog" class={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${activeNav === 'catalog' ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30' : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'}`}>
+          <div class="flex items-center gap-2.5">
+            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+            <span>Products & Variants (+560)</span>
+          </div>
+        </a>
+
+        <a href="/rules" class={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${activeNav === 'rules' ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30' : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'}`}>
+          <div class="flex items-center gap-2.5">
+            <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+            <span>Taxes, Discounts & Plans</span>
+          </div>
+        </a>
+
+        <div class="pt-4 text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 py-1">Customer Experience</div>
+
+        <a href="/portal" class={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${activeNav === 'portal' ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30' : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'}`}>
+          <div class="flex items-center gap-2.5">
+            <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            <span>Customer Self-Service</span>
+          </div>
+          <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-500/20 text-indigo-400">Portal</span>
+        </a>
+      </nav>
+
+      <!-- Live Notification Ticker at bottom of sidebar -->
+      <div class="p-3 border-t border-slate-800/80 bg-slate-900/60">
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Live Activity Feed</span>
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        </div>
+        <div id="sidebar-live-feed" class="text-[11px] text-slate-400 font-mono space-y-1 max-h-24 overflow-y-auto">
+          <div class="text-slate-400">Listening to SSE server...</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto bg-[#0b0f19] p-4 lg:p-8">
+      <slot />
+    </main>
+  </div>
+
+  <!-- Realtime Toast Notifications Container -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"></div>
+
+  <!-- Batch Billing Running Modal / Overlay -->
+  <div id="batch-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+          <svg class="w-6 h-6 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        </div>
+        <div>
+          <h3 class="font-bold text-white text-base">Nightly Billing Batch</h3>
+          <p class="text-xs text-slate-400">Scanning active subscriptions for due dates...</p>
+        </div>
+      </div>
+      <div id="batch-results" class="bg-slate-950 p-3 rounded-lg border border-slate-800 font-mono text-xs text-slate-300 max-h-40 overflow-y-auto">
+        Processing zero-double-billing batch run...
+      </div>
+      <div class="flex justify-end">
+        <button id="batch-modal-close" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client-side Script for Auth, SSE, and UI behaviors -->
+  <script>
+    import { loginAs, getStoredUser, apiFetch } from '../lib/api';
+
+    // Toast alert helper
+    (window as any).showToast = function(title: string, message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      const colors = {
+        info: 'bg-indigo-950/90 border-indigo-700 text-indigo-200',
+        success: 'bg-emerald-950/90 border-emerald-700 text-emerald-200',
+        warning: 'bg-amber-950/90 border-amber-700 text-amber-200',
+        error: 'bg-rose-950/90 border-rose-700 text-rose-200',
+      };
+
+      toast.className = `pointer-events-auto p-3 rounded-xl border shadow-xl flex items-start gap-3 backdrop-blur transition-all duration-300 transform translate-y-2 opacity-0 ${colors[type]}`;
+      toast.innerHTML = `
+        <div class="flex-1">
+          <div class="font-bold text-xs">${title}</div>
+          <div class="text-[11px] opacity-90">${message}</div>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-x-4');
+        setTimeout(() => toast.remove(), 300);
+      }, 5000);
+    };
+
+    // Ensure session exists
+    async function initAuth() {
+      const user = getStoredUser();
+      if (!user) {
+        // Auto demo login as admin
+        await loginAs('admin@brightloop.io', 'BrightloopAdmin2026!');
+      }
+      updateUserUI();
+      fetchSidebarCounts();
+    }
+
+    function updateUserUI() {
+      const user = getStoredUser();
+      if (!user) return;
+      const nameEl = document.getElementById('active-user-name');
+      const roleEl = document.getElementById('active-user-role');
+      const lettersEl = document.getElementById('avatar-letters');
+
+      if (nameEl) nameEl.textContent = user.full_name;
+      if (roleEl) roleEl.textContent = user.role;
+      if (lettersEl) {
+        const initials = user.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        lettersEl.textContent = initials;
+      }
+    }
+
+    async function fetchSidebarCounts() {
+      const [subsRes, invsRes] = await Promise.all([
+        apiFetch<any>('/api/v1/subscriptions?limit=1'),
+        apiFetch<any>('/api/v1/billing/invoices?limit=1')
+      ]);
+
+      const subBadge = document.getElementById('nav-subs-count');
+      const invBadge = document.getElementById('nav-invoices-count');
+      if (subBadge && subsRes.data?.total !== undefined) subBadge.textContent = subsRes.data.total;
+      if (invBadge && invsRes.data?.total !== undefined) invBadge.textContent = invsRes.data.total;
+    }
+
+    // Role switcher dropdown
+    const roleBtn = document.getElementById('role-switch-btn');
+    const roleDropdown = document.getElementById('role-dropdown');
+    if (roleBtn && roleDropdown) {
+      roleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        roleDropdown.classList.toggle('hidden');
+      });
+      document.addEventListener('click', () => {
+        roleDropdown.classList.add('hidden');
+      });
+    }
+
+    document.querySelectorAll('.role-switch-option').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const target = e.currentTarget as HTMLElement;
+        const email = target.dataset.email!;
+        const pass = target.dataset.pass!;
+        const ok = await loginAs(email, pass);
+        if (ok) {
+          (window as any).showToast('Switched Persona', `Now logged in as ${email}`, 'success');
+          updateUserUI();
+          setTimeout(() => window.location.reload(), 400);
+        } else {
+          (window as any).showToast('Login Error', 'Failed to switch persona', 'error');
+        }
+      });
+    });
+
+    // Real-Time Server-Sent Events (SSE) Listener
+    let eventCount = 0;
+    function initSSE() {
+      const token = localStorage.getItem('brightloop_token') || '';
+      const streamUrl = token 
+        ? `http://localhost:8000/api/v1/stream/events?token=${encodeURIComponent(token)}`
+        : 'http://localhost:8000/api/v1/stream/events';
+      const eventSource = new EventSource(streamUrl);
+
+      const pulse = document.getElementById('sse-pulse');
+      const dot = document.getElementById('sse-dot');
+      const text = document.getElementById('sse-text');
+      const countEl = document.getElementById('sse-event-count');
+      const feed = document.getElementById('sidebar-live-feed');
+
+      eventSource.onopen = () => {
+        if (dot) dot.className = 'relative inline-flex rounded-full h-2 w-2 bg-emerald-500';
+        if (pulse) pulse.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75';
+        if (text) text.textContent = 'SSE Connected';
+      };
+
+      eventSource.onerror = () => {
+        if (dot) dot.className = 'relative inline-flex rounded-full h-2 w-2 bg-amber-500';
+        if (pulse) pulse.className = 'hidden';
+        if (text) text.textContent = 'SSE Reconnecting...';
+      };
+
+      eventSource.onmessage = (e) => {
+        try {
+          const payload = JSON.parse(e.data);
+          eventCount++;
+          if (countEl) countEl.textContent = String(eventCount);
+
+          // Add to sidebar ticker
+          if (feed) {
+            const entry = document.createElement('div');
+            entry.className = 'text-slate-300 font-mono text-[10px] border-b border-slate-800/40 pb-1';
+            const time = new Date().toLocaleTimeString();
+            entry.innerHTML = `<span class="text-indigo-400">[${time}]</span> ${payload.event || payload.action || 'Event'}: <span class="text-white">${payload.detail || payload.message || JSON.stringify(payload)}</span>`;
+            feed.prepend(entry);
+            while (feed.children.length > 8) feed.removeChild(feed.lastChild!);
+          }
+
+          // Trigger toast
+          if (payload.event === 'payment_received' || payload.action === 'payment_recorded') {
+            (window as any).showToast('💰 Payment Received', `${payload.detail || 'Payment processed successfully'}`, 'success');
+          } else if (payload.event === 'subscription_transition' || payload.action === 'subscription_updated') {
+            (window as any).showToast('📋 Subscription Updated', `${payload.detail || 'Subscription status changed'}`, 'info');
+          } else if (payload.event === 'invoice_generated') {
+            (window as any).showToast('🧾 Invoice Generated', `${payload.detail || 'New invoice generated'}`, 'info');
+          }
+
+          // Dispatch custom DOM event so individual pages can refresh their tables
+          window.dispatchEvent(new CustomEvent('brightloop:sse', { detail: payload }));
+        } catch (err) {
+          console.debug("SSE non-json ping:", e.data);
+        }
+      };
+    }
+
+    // Trigger Batch Billing shortcut
+    const batchBtn = document.getElementById('btn-run-batch-billing');
+    const batchModal = document.getElementById('batch-modal');
+    const batchClose = document.getElementById('batch-modal-close');
+    const batchResults = document.getElementById('batch-results');
+
+    if (batchBtn && batchModal && batchClose && batchResults) {
+      batchBtn.addEventListener('click', async () => {
+        batchModal.classList.remove('hidden');
+        batchResults.textContent = 'Contacting Billing Engine (idempotent run with SELECT FOR UPDATE SKIP LOCKED)...';
+        
+        const res = await apiFetch<any>('/api/v1/billing/batch-run', { method: 'POST' });
+        if (res.data) {
+          batchResults.innerHTML = `
+            <div class="text-emerald-400 font-bold mb-1">Batch Completed Successfully!</div>
+            <div>Invoices Generated: <span class="text-white font-bold">${res.data.invoices_generated ?? 0}</span></div>
+            <div>Subscriptions Scanned: <span class="text-white font-bold">${res.data.subscriptions_processed ?? res.data.processed ?? 0}</span></div>
+            <div>Skipped (Already Invoiced / Not Due): <span class="text-white font-bold">${res.data.skipped ?? 0}</span></div>
+            <div class="text-indigo-300 mt-2 text-[10px]">Idempotency guarantee ensured 0 double-billings.</div>
+          `;
+          (window as any).showToast('Billing Batch Complete', `Generated ${res.data.invoices_generated ?? 0} invoices`, 'success');
+          fetchSidebarCounts();
+        } else {
+          batchResults.innerHTML = `<div class="text-rose-400">Error: ${res.error}</div>`;
+        }
+      });
+
+      batchClose.addEventListener('click', () => {
+        batchModal.classList.add('hidden');
+      });
+    }
+
+    // Initialize on load
+    initAuth();
+    initSSE();
+  </script>
+</body>
+</html>

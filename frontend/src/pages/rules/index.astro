@@ -1,0 +1,165 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Plans, Taxes & Discounts — Brightloop ERP" activeNav="rules">
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="border-b border-slate-800/80 pb-5">
+      <div class="flex items-center gap-3">
+        <h1 class="text-2xl font-extrabold text-white tracking-tight">Financial & Lifecycle Rules</h1>
+        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">
+          Engine Configuration
+        </span>
+      </div>
+      <p class="text-xs text-slate-400 mt-1">
+        Configure subscription intervals, 18% GST tax rules, volume tier discounts, and quotation templates.
+      </p>
+    </div>
+
+    <!-- 3 Core Rule Sections -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- 1. Subscription Plans -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            <h2 class="font-bold text-white text-sm">Subscription Plans</h2>
+          </div>
+          <span class="text-[10px] text-slate-400 font-mono">Interval Rules</span>
+        </div>
+
+        <div id="plans-container" class="space-y-2.5 text-xs">
+          <div class="text-slate-400 py-6 text-center">Loading plans...</div>
+        </div>
+      </div>
+
+      <!-- 2. Discount Engines -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+            <h2 class="font-bold text-white text-sm">Discount Rules & Coupons</h2>
+          </div>
+          <span class="text-[10px] text-slate-400 font-mono">Volume Tiers</span>
+        </div>
+
+        <div id="discounts-container" class="space-y-2.5 text-xs">
+          <div class="text-slate-400 py-6 text-center">Loading discounts...</div>
+        </div>
+      </div>
+
+      <!-- 3. Tax Jurisdictions -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z"></path></svg>
+            <h2 class="font-bold text-white text-sm">Tax Rules & GST</h2>
+          </div>
+          <span class="text-[10px] text-slate-400 font-mono">Auto-Assigned</span>
+        </div>
+
+        <div id="taxes-container" class="space-y-2.5 text-xs">
+          <div class="text-slate-400 py-6 text-center">Loading taxes...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quotation Templates Section -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+      <div class="border-b border-slate-800 pb-3 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          <h2 class="font-bold text-white text-sm">Enterprise Quotation Templates</h2>
+        </div>
+        <span class="text-[10px] text-slate-400 font-mono">1-Click Auto-Quotation</span>
+      </div>
+
+      <div id="templates-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <div class="text-slate-400 py-6 text-center col-span-2">Loading templates...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import { apiFetch } from '../../lib/api';
+
+    async function loadRules() {
+      const [plansRes, discsRes, taxesRes, tmplsRes] = await Promise.all([
+        apiFetch<any>('/api/v1/catalog/plans'),
+        apiFetch<any>('/api/v1/catalog/discounts'),
+        apiFetch<any>('/api/v1/catalog/taxes'),
+        apiFetch<any>('/api/v1/catalog/quotation-templates'),
+      ]);
+
+      // Plans
+      const plansBox = document.getElementById('plans-container')!;
+      if (plansRes.data && plansRes.data.length > 0) {
+        plansBox.innerHTML = plansRes.data.map((p: any) => `
+          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-white text-xs">${p.name}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-indigo-500/20 text-indigo-300 font-mono">${p.billing_interval}</span>
+            </div>
+            <div class="text-[11px] text-slate-400 flex items-center justify-between font-mono">
+              <span>Base Plan Fee: <strong>$${p.base_cost}</strong></span>
+              <span>Min Qty: <strong>${p.min_quantity}</strong></span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Discounts
+      const discsBox = document.getElementById('discounts-container')!;
+      if (discsRes.data && discsRes.data.length > 0) {
+        discsBox.innerHTML = discsRes.data.map((d: any) => `
+          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-white text-xs">${d.name}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300">${d.code}</span>
+            </div>
+            <div class="text-[11px] text-slate-400 flex items-center justify-between font-mono">
+              <span>Type: <strong class="capitalize">${d.discount_type.replace('_', ' ')}</strong></span>
+              <span class="font-bold text-emerald-400">${d.discount_type === 'percentage' ? d.value + '%' : '$' + d.value}</span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Taxes
+      const taxesBox = document.getElementById('taxes-container')!;
+      if (taxesRes.data && taxesRes.data.length > 0) {
+        taxesBox.innerHTML = taxesRes.data.map((t: any) => `
+          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-white text-xs">${t.name}</span>
+              <span class="font-bold text-amber-400 font-mono">${t.rate_percent}%</span>
+            </div>
+            <div class="text-[11px] text-slate-400">
+              Applies to SaaS software subscriptions and cloud compute.
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Templates
+      const tmplsBox = document.getElementById('templates-container')!;
+      if (tmplsRes.data && tmplsRes.data.length > 0) {
+        tmplsBox.innerHTML = tmplsRes.data.map((t: any) => `
+          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800/80 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-white text-sm">${t.name}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-500/20 text-cyan-300">${t.payment_terms}</span>
+            </div>
+            <p class="text-xs text-slate-400">${t.notes || 'Pre-configured quotation lines bundle.'}</p>
+            <div class="text-[11px] text-slate-500 font-mono">
+              Lines count: ${t.template_lines?.length || 0} configured items
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    loadRules();
+  </script>
+</Layout>
