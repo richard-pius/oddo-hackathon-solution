@@ -101,7 +101,7 @@ You can run Brightloop either **Locally (Without Docker — Zero Config)** or us
 
 #### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/your-org/oddo-hackathon-solution.git
+git clone https://github.com/richard-pius/oddo-hackathon-solution.git
 cd oddo-hackathon-solution
 ```
 
@@ -275,6 +275,8 @@ oddo-hackathon-solution/
 │   └── settings.json           # IDE interpreter and import path settings
 ├── pyrightconfig.json          # Language server configuration
 ├── docker-compose.yml          # Multi-container orchestration (DB, API, UI)
+├── LICENSE                     # MIT Open Source License
+├── requirements.txt            # Root Python dependencies delegate
 ├── README.md                   # System documentation and evaluator guide
 │
 ├── backend/
@@ -283,6 +285,10 @@ oddo-hackathon-solution/
 │   ├── seed_brightloop.py      # Enterprise seed script with realistic data
 │   ├── alembic.ini             # Database migration configuration
 │   ├── alembic/                # Migration scripts and environment
+│   ├── tests/                  # Automated unit and integration test suite
+│   │   ├── __init__.py
+│   │   ├── test_auth.py
+│   │   └── test_config.py
 │   └── app/
 │       ├── main.py             # FastAPI entrypoint, lifespan, CORS, and cron
 │       ├── config.py           # Pydantic v2 settings (SQLite local / Postgres Docker)
@@ -307,7 +313,9 @@ oddo-hackathon-solution/
     ├── Dockerfile              # Node 22 container definition
     ├── package.json            # Astro 5 & Tailwind CSS dependencies
     ├── astro.config.mjs        # Astro configuration with Vite Tailwind plugin
+    ├── README.md               # Frontend-specific documentation
     └── src/
+        ├── middleware.ts       # Route protection & auth session guard
         ├── layouts/
         │   └── Layout.astro    # Master ERP layout, SSE listener, role switcher
         ├── styles/
@@ -316,6 +324,8 @@ oddo-hackathon-solution/
         │   └── api.ts          # Centralized API client & JWT storage
         └── pages/
             ├── index.astro                 # Executive Finance Dashboard
+            ├── login.astro                 # Authentication sign-in portal
+            ├── register.astro              # Tenant customer onboarding
             ├── subscriptions/
             │   ├── index.astro             # Subscriptions ledger with status filters
             │   ├── new.astro               # Quotation wizard & template auto-fill

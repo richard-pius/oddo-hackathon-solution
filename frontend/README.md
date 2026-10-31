@@ -1,43 +1,36 @@
-# Astro Starter Kit: Minimal
+# Brightloop ERP Frontend
 
-```sh
-npm create astro@latest -- --template minimal
+The user-facing web interface for the Brightloop Software Subscription & Recurring Billing ERP, built with **Astro 5** and **Tailwind CSS v4**.
+
+## Features
+
+- **Executive & Finance Dashboard**: Real-time SaaS KPIs (MRR, ARR, churn rate, aging breakdown).
+- **Odoo-Style Subscription Forms**: Chevron status ribbons, proration wizard, and chatter feed.
+- **Invoice & Ledger Management**: Direct invoice inspection, vector PDF download, and payment reconciliation.
+- **Quotation Wizard**: Multi-item bundle selection with automatic pricing extras and discount calculations.
+- **Customer Self-Service Portal**: Instant customer invoice checkout and payment recording.
+- **Real-Time Telemetry**: Persistent SSE updates via event tickers and status indicators.
+
+## Running Locally
+
+From the `frontend` directory:
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+The frontend will start at [http://localhost:4321](http://localhost:4321).
 
-## 🚀 Project Structure
+## Production Build
 
-Inside of your Astro project, you'll see the following folders and files:
+```bash
+# Build static / server output to ./dist/
+npm run build
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+# Preview the production build locally
+npm run preview
 ```
-
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).

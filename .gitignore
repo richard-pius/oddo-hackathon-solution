@@ -4,7 +4,7 @@ __pycache__/
 *$py.class
 *.so
 
-# Distribution / packaging
+# Distribution / packaging (anchored to root so src/lib is never ignored)
 .Python
 build/
 develop-eggs/
@@ -12,8 +12,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -24,6 +24,10 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+# Source Code Inclusions (ensures frontend libraries are never ignored)
+!frontend/src/lib/
+!**/src/**
 
 # Virtual Environments
 venv/
@@ -84,9 +88,8 @@ coverage.xml
 # IDE & Editor Specific
 .idea/
 .vscode/*
-.vscode/
-!.vscode/extensions.json
 !.vscode/settings.json
+!.vscode/extensions.json
 *.sublime-workspace
 *.sublime-project
 *.swp

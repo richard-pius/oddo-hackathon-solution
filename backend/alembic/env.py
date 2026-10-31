@@ -1,6 +1,6 @@
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
-from alembic import context
+from alembic import context  # type: ignore
 import app.models  # noqa — ensure all models are imported for autogenerate
 from app.database import Base
 

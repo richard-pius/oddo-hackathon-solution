@@ -7,12 +7,13 @@ Why async everywhere:
   and portal users who happen to be browsing during the batch run.
 """
 
+from typing import Any, AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 from app.config import settings
 
 is_sqlite = "sqlite" in settings.DATABASE_URL
-engine_kwargs = {"echo": False}
+engine_kwargs: dict[str, Any] = {"echo": False}
 if not is_sqlite:
     engine_kwargs.update({
         "pool_size": 20,
@@ -36,7 +37,7 @@ class Base(DeclarativeBase):
     pass
 
 
-async def get_db() -> AsyncSession:
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """FastAPI dependency: yields a session that auto-closes after the request."""
     async with async_session_factory() as session:
         try:

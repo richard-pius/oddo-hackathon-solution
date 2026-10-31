@@ -26,12 +26,13 @@ import sys
 import os
 from datetime import date, timedelta, datetime
 from decimal import Decimal
+from typing import TypedDict, Optional
 
 # Reconfigure stdout/stderr to UTF-8 to prevent Windows cp1252 UnicodeEncodeError on emojis
 if hasattr(sys.stdout, 'reconfigure'):
-    sys.stdout.reconfigure(encoding='utf-8')
+    getattr(sys.stdout, 'reconfigure')(encoding='utf-8')
 if hasattr(sys.stderr, 'reconfigure'):
-    sys.stderr.reconfigure(encoding='utf-8')
+    getattr(sys.stderr, 'reconfigure')(encoding='utf-8')
 
 # Add the parent directory to the path so we can import app modules
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -49,17 +50,34 @@ from app.models import (
 from app.services.auth_service import hash_password
 
 
+class SubSeedConfig(TypedDict):
+    customer: User
+    plan: SubscriptionPlan
+    status: SubscriptionStatus
+    start: date
+    expiry: Optional[date]
+    next_bill: Optional[date]
+    discount: Optional[DiscountRule]
+
+
 async def seed():
+    force_reset = "--reset" in sys.argv or "--force" in sys.argv
+
     # Create tables
     async with engine.begin() as conn:
+        if force_reset:
+            print("🔄 Reset flag detected — dropping and recreating tables...")
+            await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
-    async with async_session_factory() as db:
-        # Check if already seeded
-        result = await db.execute(select(User).limit(1))
-        if result.scalar_one_or_none():
-            print("Database already seeded — skipping")
-            return
+    try:
+        async with async_session_factory() as db:
+            # Check if already seeded
+            if not force_reset:
+                result = await db.execute(select(User).limit(1))
+                if result.scalar_one_or_none():
+                    print("Database already seeded — skipping (use --reset to re-seed)")
+                    return
 
         print("🌱 Seeding Brightloop database...")
 
@@ -299,7 +317,7 @@ async def seed():
         # ─── Subscriptions ───────────────────────────────────────────
         today = date.today()
 
-        sub_configs = [
+        sub_configs: list[SubSeedConfig] = [
             # Active subscriptions with upcoming billing
             {"customer": customers[0], "plan": plans[0], "status": SubscriptionStatus.ACTIVE,
              "start": today - timedelta(days=60), "expiry": today + timedelta(days=300),
@@ -335,16 +353,19 @@ async def seed():
 
         subscriptions = []
         for i, cfg in enumerate(sub_configs):
+            cust: User = cfg["customer"]
+            p: SubscriptionPlan = cfg["plan"]
+            disc: Optional[DiscountRule] = cfg["discount"]
             sub = Subscription(
                 subscription_number=f"SUB-2026-{i + 1:05d}",
-                customer_id=cfg["customer"].id,
-                plan_id=cfg["plan"].id,
+                customer_id=int(cust.id),
+                plan_id=int(p.id),
                 start_date=cfg["start"],
                 expiry_date=cfg["expiry"],
                 next_billing_date=cfg["next_bill"],
                 payment_terms="Net 30",
                 status=cfg["status"],
-                applied_discount_id=cfg["discount"].id if cfg["discount"] else None,
+                applied_discount_id=int(disc.id) if disc else None,
             )
             subscriptions.append(sub)
 
@@ -479,6 +500,8 @@ async def seed():
         print("  Customer: customer@brightloop.io / BrightloopCustomer2026!")
         print("  ─────────────────────────────────────────────────────────────")
         print()
+    finally:
+        await engine.dispose()
 
 
 if __name__ == "__main__":

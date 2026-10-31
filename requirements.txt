@@ -1,0 +1,3 @@
+# Brightloop - Python Dependencies
+# Points to backend requirements for local or container installations
+-r backend/requirements.txt

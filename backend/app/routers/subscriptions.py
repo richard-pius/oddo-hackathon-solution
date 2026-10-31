@@ -471,14 +471,12 @@ async def prorate_subscription_upgrade(
     await db.commit()
 
     # Broadcast event via SSE
-    await event_broadcaster.broadcast(
-        "subscription_transition",
-        {
-            "detail": f"Subscription {sub.subscription_number} upgraded to {data.new_quantity} seats (Invoice {inv_num}: ${prorated_amount:,.2f})",
-            "subscription_id": sub.id,
-            "invoice_id": invoice.id,
-        }
-    )
+    await event_broadcaster.broadcast({
+        "type": "subscription_transition",
+        "detail": f"Subscription {sub.subscription_number} upgraded to {data.new_quantity} seats (Invoice {inv_num}: ${prorated_amount:,.2f})",
+        "subscription_id": sub.id,
+        "invoice_id": invoice.id,
+    })
 
     return {
         "status": "prorated_success",
