@@ -9,8 +9,8 @@ Why Pydantic Settings instead of raw os.environ:
   - IDE autocomplete on `settings.DATABASE_URL` beats `os.getenv("DATABASE_URL")`.
 """
 
+from typing import List, Optional
 from pydantic_settings import BaseSettings
-from typing import List
 
 
 class Settings(BaseSettings):
@@ -38,6 +38,14 @@ class Settings(BaseSettings):
     BILLING_BATCH_SIZE: int = 500
     BILLING_CRON_HOUR: int = 0
     BILLING_CRON_MINUTE: int = 5
+
+    # --- DataStax Astra DB Telemetry ---
+    # Optional credentials for continuous cloud event telemetry/logging.
+    # When not set, the adapter runs locally in zero-config offline mode.
+    ASTRA_DB_API_ENDPOINT: Optional[str] = None
+    ASTRA_DB_APPLICATION_TOKEN: Optional[str] = None
+    ASTRA_DB_KEYSPACE: str = "brightloop"
+    ASTRA_DB_COLLECTION: str = "telemetry_events"
 
     # --- App Meta ---
     APP_NAME: str = "Brightloop Subscription Manager"
