@@ -138,62 +138,6 @@ import '../styles/global.css';
         </button>
       </form>
 
-      <!-- Evaluator Quick Switcher for Instant Zero-Friction Testing -->
-      <div class="mt-5 pt-4 border-t border-slate-100">
-        <div class="relative flex justify-center text-[10px] uppercase mb-2.5">
-          <span class="bg-white px-2 text-slate-400 font-bold tracking-wider">
-            Evaluator 1-Click Access
-          </span>
-        </div>
-
-        <div class="grid grid-cols-1 gap-1.5 text-xs">
-          <button
-            type="button"
-            class="persona-btn flex items-center justify-between p-2 rounded border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-left transition-colors cursor-pointer"
-            data-email="admin@brightloop.io"
-            data-pass="BrightloopAdmin2026!"
-          >
-            <div>
-              <div class="font-semibold text-slate-800 text-xs">Alex Morgan</div>
-              <div class="text-[11px] text-slate-500 font-mono">admin@brightloop.io</div>
-            </div>
-            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
-              Admin
-            </span>
-          </button>
-
-          <button
-            type="button"
-            class="persona-btn flex items-center justify-between p-2 rounded border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-left transition-colors cursor-pointer"
-            data-email="finance@brightloop.io"
-            data-pass="BrightloopFinance2026!"
-          >
-            <div>
-              <div class="font-semibold text-slate-800 text-xs">Sarah Chen</div>
-              <div class="text-[11px] text-slate-500 font-mono">finance@brightloop.io</div>
-            </div>
-            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              Finance
-            </span>
-          </button>
-
-          <button
-            type="button"
-            class="persona-btn flex items-center justify-between p-2 rounded border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-left transition-colors cursor-pointer"
-            data-email="customer@brightloop.io"
-            data-pass="BrightloopCustomer2026!"
-          >
-            <div>
-              <div class="font-semibold text-slate-800 text-xs">Acmez Enterprise</div>
-              <div class="text-[11px] text-slate-500 font-mono">customer@brightloop.io</div>
-            </div>
-            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
-              Customer Portal
-            </span>
-          </button>
-        </div>
-      </div>
-
       <!-- Registration link -->
       <div class="mt-5 text-center text-xs text-slate-600 border-t border-slate-100 pt-3.5">
         Need a self-service customer portal account?
@@ -223,12 +167,36 @@ import '../styles/global.css';
       btnText.textContent = 'Authenticating...';
       btnSpinner.classList.remove('hidden');
 
+      const defaultUrl = (window.PUBLIC_API_URL || localStorage.getItem('brightloop_api_url') || 'http://localhost:8000').replace(/\/$/, '');
+      let res = null;
+      let activeApiUrl = defaultUrl;
+
       try {
-        const res = await fetch('http://localhost:8000/api/v1/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        });
+        try {
+          res = await fetch(`${defaultUrl}/api/v1/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+          });
+        } catch (netErr) {
+          // If port 8000 was unreachable, attempt port 8001 fallback in case backend is running on 8001
+          if (defaultUrl.includes(':8000')) {
+            try {
+              const fallbackUrl = defaultUrl.replace(':8000', ':8001');
+              res = await fetch(`${fallbackUrl}/api/v1/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+              });
+              activeApiUrl = fallbackUrl;
+              localStorage.setItem('brightloop_api_url', fallbackUrl);
+            } catch {}
+          }
+        }
+
+        if (!res) {
+          throw new Error(`Unable to connect to backend server (${defaultUrl} or port 8001). Please make sure the FastAPI backend is running.`);
+        }
 
         if (!res.ok) {
           let msg = 'Invalid email or password.';
@@ -246,6 +214,7 @@ import '../styles/global.css';
 
         // 2. Set localStorage for client-side API requests
         localStorage.setItem('brightloop_token', data.access_token);
+        localStorage.setItem('brightloop_api_url', activeApiUrl);
         localStorage.setItem('brightloop_user', JSON.stringify({
           id: data.user_id,
           email: email,
@@ -284,16 +253,6 @@ import '../styles/global.css';
         return;
       }
       executeLogin(email, password);
-    });
-
-    document.querySelectorAll('.persona-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const email = btn.getAttribute('data-email');
-        const pass = btn.getAttribute('data-pass');
-        emailInput.value = email;
-        passwordInput.value = pass;
-        executeLogin(email, pass);
-      });
     });
   </script>
 </body>

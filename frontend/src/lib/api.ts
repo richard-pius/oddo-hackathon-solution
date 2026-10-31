@@ -11,7 +11,7 @@
  */
 
 export const API_URL = typeof window !== 'undefined' 
-  ? (window as any).PUBLIC_API_URL || 'http://localhost:8000'
+  ? (window as any).PUBLIC_API_URL || localStorage.getItem('brightloop_api_url') || 'http://localhost:8000'
   : 'http://localhost:8000';
 
 export interface UserProfile {

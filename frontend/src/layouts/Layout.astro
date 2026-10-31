@@ -550,7 +550,8 @@ const {
     // 6. Realtime SSE Listener
     try {
       const token = localStorage.getItem('brightloop_token');
-      const sseUrl = `http://localhost:8000/api/v1/stream/events?token=${token || ''}`;
+      const apiBase = (window.PUBLIC_API_URL || localStorage.getItem('brightloop_api_url') || 'http://localhost:8000').replace(/\/$/, '');
+      const sseUrl = `${apiBase}/api/v1/stream/events?token=${token || ''}`;
       const evtSource = new EventSource(sseUrl);
 
       evtSource.onmessage = function(event) {

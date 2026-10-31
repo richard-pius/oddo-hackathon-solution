@@ -229,7 +229,6 @@ async def download_invoice_pdf(
 @router.post("/run-billing")
 async def trigger_billing_run(
     billing_date: date | None = None,
-    background_tasks: BackgroundTasks | None = None,
     user: User = Depends(require_staff_or_admin),
 ):
     """
