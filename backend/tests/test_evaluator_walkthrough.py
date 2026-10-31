@@ -9,10 +9,112 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from fastapi.testclient import TestClient
 from app.main import app
 
+
 class TestEvaluatorWalkthrough(unittest.TestCase):
+    client: TestClient
+    admin_token: str = ""
+    admin_headers: dict = {}
+    created_sub_id: int | None = None
+    prorated_invoice_id: int | None = None
+
     @classmethod
     def setUpClass(cls):
         cls.client = TestClient(app)
+        # Authenticate admin at class setup so every test is runnable independently
+        res = cls.client.post("/api/v1/auth/login", json={
+            "email": "admin@brightloop.io",
+            "password": "BrightloopAdmin2026!"
+        })
+        if res.status_code == 200:
+            data = res.json()
+            cls.admin_token = data.get("access_token", "")
+            cls.admin_headers = {"Authorization": f"Bearer {cls.admin_token}"}
+
+    @classmethod
+    def tearDownClass(cls):
+        # Gracefully shut down TestClient and connection pools to eliminate ResourceWarnings
+        cls.client.close()
+
+    def _ensure_draft_subscription(self) -> int:
+        """Helper to ensure a DRAFT subscription exists for lifecycle tests."""
+        if self.created_sub_id:
+            # Check if current created_sub is still in DRAFT
+            res = self.client.get(f"/api/v1/subscriptions/{self.created_sub_id}", headers=self.admin_headers)
+            if res.status_code == 200 and res.json().get("status") == "DRAFT":
+                return self.created_sub_id
+
+        # Query existing DRAFT subscriptions
+        res = self.client.get("/api/v1/subscriptions?status_filter=DRAFT", headers=self.admin_headers)
+        if res.status_code == 200:
+            items = res.json().get("items", [])
+            if items:
+                return items[0]["id"]
+
+        # Otherwise create one dynamically
+        return self._create_sample_subscription()
+
+    def _ensure_active_subscription(self) -> int:
+        """Helper to ensure an ACTIVE subscription exists with line items."""
+        # Query existing ACTIVE subscriptions
+        res = self.client.get("/api/v1/subscriptions?status_filter=ACTIVE", headers=self.admin_headers)
+        if res.status_code == 200:
+            items = res.json().get("items", [])
+            for item in items:
+                # Ensure it has lines
+                sub_detail = self.client.get(f"/api/v1/subscriptions/{item['id']}", headers=self.admin_headers).json()
+                if sub_detail.get("lines"):
+                    return item["id"]
+
+        # If none found, create and advance one
+        sub_id = self._create_sample_subscription()
+        for st in ["QUOTATION", "CONFIRMED", "ACTIVE"]:
+            self.client.post(
+                f"/api/v1/subscriptions/{sub_id}/transition",
+                json={"target_status": st, "notes": f"Auto-advancing to {st}"},
+                headers=self.admin_headers
+            )
+        return sub_id
+
+    def _create_sample_subscription(self) -> int:
+        """Helper to create a fresh sample subscription with dynamic relationships."""
+        # Dynamic customer lookup
+        users_res = self.client.get("/api/v1/auth/users", headers=self.admin_headers)
+        customers = [u for u in users_res.json() if str(u.get("role", "")).upper() == "CUSTOMER"]
+        customer_id = customers[0]["id"] if customers else 1
+
+        # Dynamic plan & product lookup
+        plans_res = self.client.get("/api/v1/catalog/plans", headers=self.admin_headers)
+        plans = plans_res.json()
+        plan_id = plans[0]["id"] if plans else 1
+
+        prods_res = self.client.get("/api/v1/catalog/products", headers=self.admin_headers)
+        products = prods_res.json()
+        prod = products[0]
+
+        taxes_res = self.client.get("/api/v1/catalog/taxes", headers=self.admin_headers)
+        taxes = taxes_res.json()
+        tax_ids = [taxes[0]["id"]] if taxes else []
+
+        payload = {
+            "customer_id": customer_id,
+            "plan_id": plan_id,
+            "start_date": "2026-11-01",
+            "payment_terms": "Net 30",
+            "notes": "Isolated Test Subscription",
+            "lines": [
+                {
+                    "product_id": prod["id"],
+                    "variant_id": prod["variants"][0]["id"] if prod.get("variants") else None,
+                    "description": prod.get("name", "Product License"),
+                    "quantity": 5,
+                    "unit_price": 1200.00,
+                    "tax_ids": tax_ids
+                }
+            ]
+        }
+        res = self.client.post("/api/v1/subscriptions", json=payload, headers=self.admin_headers)
+        sub = res.json()
+        return sub["id"]
 
     def test_01_evaluator_login_admin(self):
         """Step 1 prerequisite: Authenticate as Administrator"""
@@ -20,43 +122,47 @@ class TestEvaluatorWalkthrough(unittest.TestCase):
             "email": "admin@brightloop.io",
             "password": "BrightloopAdmin2026!"
         })
-        print(f"Step 1 Login: status={res.status_code}")
         self.assertEqual(res.status_code, 200, f"Login failed: {res.text}")
         data = res.json()
         self.assertIn("access_token", data)
-        self.assertEqual(data["role"], "ADMIN")
-        TestEvaluatorWalkthrough.admin_token = data["access_token"]
-        TestEvaluatorWalkthrough.admin_headers = {"Authorization": f"Bearer {data['access_token']}"}
+        self.assertEqual(str(data["role"]).upper(), "ADMIN")
 
     def test_02_dashboard_kpis(self):
         """Step 1: Open Executive Dashboard & verify KPIs"""
         res = self.client.get("/api/v1/analytics/dashboard", headers=self.admin_headers)
-        print(f"Step 1 Dashboard KPIs: status={res.status_code}")
         self.assertEqual(res.status_code, 200, f"Dashboard failed: {res.text}")
         data = res.json()
-        print(f"Dashboard keys: {list(data.keys())}")
         self.assertIn("mrr", data)
         self.assertIn("arr", data)
+        self.assertIn("total_revenue_collected", data)
 
     def test_03_create_subscription(self):
         """Step 2: Quotation Builder & create subscription in DRAFT"""
-        # Fetch templates
+        # Dynamic template lookup (tests both /templates and /quotation-templates)
         tpl_res = self.client.get("/api/v1/catalog/quotation-templates", headers=self.admin_headers)
         self.assertEqual(tpl_res.status_code, 200)
         templates = tpl_res.json()
-        print(f"Templates count: {len(templates)}")
         self.assertTrue(len(templates) > 0)
         tpl = templates[0]
 
-        # Fetch products
+        # Dynamic customer lookup
+        users_res = self.client.get("/api/v1/auth/users", headers=self.admin_headers)
+        customers = [u for u in users_res.json() if str(u.get("role", "")).upper() == "CUSTOMER"]
+        self.assertTrue(len(customers) > 0)
+        customer_id = customers[0]["id"]
+
+        # Dynamic products and taxes lookup
         prod_res = self.client.get("/api/v1/catalog/products", headers=self.admin_headers)
         self.assertEqual(prod_res.status_code, 200)
         products = prod_res.json()
         self.assertTrue(len(products) > 0)
 
-        # Create subscription
+        taxes_res = self.client.get("/api/v1/catalog/taxes", headers=self.admin_headers)
+        taxes = taxes_res.json()
+        tax_ids = [taxes[0]["id"]] if taxes else []
+
         create_payload = {
-            "customer_id": 4, # Customer user
+            "customer_id": customer_id,
             "plan_id": tpl["plan_id"],
             "start_date": "2026-11-01",
             "payment_terms": "Net 30",
@@ -64,16 +170,15 @@ class TestEvaluatorWalkthrough(unittest.TestCase):
             "lines": [
                 {
                     "product_id": products[0]["id"],
-                    "variant_id": products[0]["variants"][0]["id"] if products[0]["variants"] else None,
+                    "variant_id": products[0]["variants"][0]["id"] if products[0].get("variants") else None,
                     "description": "Odoo Enterprise License",
                     "quantity": 5,
                     "unit_price": 1200.00,
-                    "tax_ids": [1]
+                    "tax_ids": tax_ids
                 }
             ]
         }
         res = self.client.post("/api/v1/subscriptions", json=create_payload, headers=self.admin_headers)
-        print(f"Create subscription: status={res.status_code}")
         self.assertIn(res.status_code, [200, 201], f"Create subscription failed: {res.text}")
         sub = res.json()
         self.assertEqual(sub["status"], "DRAFT")
@@ -81,50 +186,56 @@ class TestEvaluatorWalkthrough(unittest.TestCase):
 
     def test_04_advance_state_machine(self):
         """Step 3: Advance state machine: DRAFT -> QUOTATION -> CONFIRMED -> ACTIVE"""
-        sub_id = self.created_sub_id
+        sub_id = self._ensure_draft_subscription()
         for target_state in ["QUOTATION", "CONFIRMED", "ACTIVE"]:
             res = self.client.post(
                 f"/api/v1/subscriptions/{sub_id}/transition",
                 json={"target_status": target_state, "notes": f"Advancing to {target_state}"},
                 headers=self.admin_headers
             )
-            print(f"Transition to {target_state}: status={res.status_code}")
             self.assertEqual(res.status_code, 200, f"Transition to {target_state} failed: {res.text}")
             self.assertEqual(res.json()["status"], target_state)
 
     def test_05_prorated_upgrade(self):
         """Step 4: Mid-cycle prorated seat upgrade (5 -> 10 seats)"""
-        sub_id = self.created_sub_id
-        # Get subscription lines
+        sub_id = self._ensure_active_subscription()
         sub_res = self.client.get(f"/api/v1/subscriptions/{sub_id}", headers=self.admin_headers)
         self.assertEqual(sub_res.status_code, 200)
         sub_data = sub_res.json()
-        line_id = sub_data["lines"][0]["id"]
+        self.assertTrue(len(sub_data["lines"]) > 0)
+        target_line = sub_data["lines"][0]
+        current_qty = target_line["quantity"]
 
         prorate_payload = {
-            "line_id": line_id,
-            "new_quantity": 10
+            "line_id": target_line["id"],
+            "new_quantity": current_qty + 5
         }
         res = self.client.post(f"/api/v1/subscriptions/{sub_id}/prorate", json=prorate_payload, headers=self.admin_headers)
-        print(f"Prorate upgrade: status={res.status_code}")
         self.assertEqual(res.status_code, 200, f"Proration failed: {res.text}")
         prorate_result = res.json()
         self.assertEqual(prorate_result["status"], "prorated_success")
-        self.assertEqual(prorate_result["new_quantity"], 10)
+        self.assertEqual(prorate_result["new_quantity"], current_qty + 5)
         self.assertIn("invoice_id", prorate_result)
         TestEvaluatorWalkthrough.prorated_invoice_id = prorate_result["invoice_id"]
 
     def test_06_batch_billing(self):
-        """Step 5: Trigger Batch Billing Run"""
-        res = self.client.post("/api/v1/billing/run-billing", headers=self.admin_headers)
-        print(f"Batch billing /run-billing: status={res.status_code}")
-        self.assertEqual(res.status_code, 200, f"Batch billing failed: {res.text}")
+        """Step 5: Trigger Batch Billing Run (tests both /run-billing and /batch-run)"""
+        res1 = self.client.post("/api/v1/billing/run-billing", headers=self.admin_headers)
+        self.assertEqual(res1.status_code, 200, f"Batch billing failed: {res1.text}")
+        res2 = self.client.post("/api/v1/billing/batch-run", headers=self.admin_headers)
+        self.assertEqual(res2.status_code, 200, f"Batch-run alias failed: {res2.text}")
 
     def test_07_download_pdf_invoice(self):
         """Step 6: Download vector PDF invoice"""
         inv_id = self.prorated_invoice_id
+        if not inv_id:
+            # Query first available invoice
+            inv_res = self.client.get("/api/v1/billing/invoices", headers=self.admin_headers)
+            items = inv_res.json().get("items", [])
+            self.assertTrue(len(items) > 0, "No invoice available to test PDF download")
+            inv_id = items[0]["id"]
+
         res = self.client.get(f"/api/v1/billing/invoices/{inv_id}/pdf", headers=self.admin_headers)
-        print(f"PDF download: status={res.status_code}, content-type={res.headers.get('content-type')}")
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers.get("content-type"), "application/pdf")
         self.assertTrue(len(res.content) > 100)
@@ -146,23 +257,32 @@ class TestEvaluatorWalkthrough(unittest.TestCase):
         self.assertEqual(inv_res.status_code, 200)
         invoices_data = inv_res.json()
         invoices = invoices_data.get("items", [])
-        self.assertTrue(len(invoices) > 0)
+        self.assertTrue(len(invoices) > 0, "Customer should have at least one invoice")
+
         open_inv = next((inv for inv in invoices if Decimal(str(inv["amount_due"])) > 0), None)
         if not open_inv:
             open_inv = invoices[0]
 
         # Record payment
+        pay_amount = float(open_inv["amount_due"]) if float(open_inv["amount_due"]) > 0 else 50.0
         pay_payload = {
             "invoice_id": open_inv["id"],
-            "amount": float(open_inv["amount_due"]) if float(open_inv["amount_due"]) > 0 else 50.0,
-            "payment_method": "credit_card",
+            "amount": pay_amount,
+            "payment_method": "CREDIT_CARD",
             "reference_note": "Evaluator portal test payment"
         }
         pay_res = self.client.post("/api/v1/payments", json=pay_payload, headers=cust_headers)
-        print(f"Payment record: status={pay_res.status_code}")
         self.assertIn(pay_res.status_code, [200, 201], f"Payment failed: {pay_res.text}")
         pay_data = pay_res.json()
         self.assertEqual(pay_data["invoice_id"], open_inv["id"])
+
+        # Verify auto-reconciliation on the invoice
+        check_inv = self.client.get(f"/api/v1/billing/invoices/{open_inv['id']}", headers=cust_headers)
+        self.assertEqual(check_inv.status_code, 200)
+        updated_inv = check_inv.json()
+        self.assertEqual(Decimal(str(updated_inv["amount_due"])), Decimal("0.00"))
+        self.assertEqual(str(updated_inv["status"]).upper(), "PAID")
+
 
 if __name__ == "__main__":
     unittest.main()
