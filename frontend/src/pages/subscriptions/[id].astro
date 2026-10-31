@@ -463,7 +463,7 @@ const { id } = Astro.params;
               </span>
             </td>
             <td class="text-right">
-              <a href="${API_URL}/api/v1/billing/invoices/${inv.id}/pdf" target="_blank" class="px-2 py-0.5 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium text-[11px] shadow-2xs">
+              <a href="${API_URL}/api/v1/billing/invoices/${inv.id}/pdf?token=" + encodeURIComponent(localStorage.getItem("brightloop_token") || "") target="_blank" class="px-2 py-0.5 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium text-[11px] shadow-2xs">
                 PDF
               </a>
             </td>
@@ -588,6 +588,27 @@ const { id } = Astro.params;
         method: 'POST',
         body: JSON.stringify({ line_id: lineId, new_quantity: newQty }),
       });
+    // Manual Invoice Generator
+    document.getElementById('btn-manual-invoice')?.addEventListener('click', async () => {
+      const btn = document.getElementById('btn-manual-invoice') as HTMLButtonElement;
+      if (btn) btn.disabled = true;
+      try {
+        const res = await apiFetch<any>(`/api/v1/subscriptions/${subId}/generate-invoice`, {
+          method: 'POST',
+        });
+        if (res.data) {
+          alert(`✅ Invoice generated successfully: ${res.data.invoice_number} ($${Number(res.data.total_amount).toFixed(2)})`);
+          loadSubscription();
+        } else {
+          alert(res.error || 'Failed to generate invoice');
+        }
+      } catch (err: any) {
+        alert(err.message || 'Error communicating with server');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    });
+
 
       if (res.data) {
         prorateModal.classList.add('hidden');

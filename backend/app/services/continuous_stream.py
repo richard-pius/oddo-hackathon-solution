@@ -63,14 +63,24 @@ class EventBroadcaster:
                 pass
         logger.info(f"SSE client disconnected. Total clients: {len(self._clients)}")
 
-    async def broadcast(self, event: dict):
+    async def broadcast(self, event: dict | str, data: dict | None = None):
         """
         Push an event to all connected clients and archive to Astra DB telemetry.
+        Supports both single dictionary `broadcast({"type": ...})` and
+        two-argument `broadcast("event_type", {...})` formats.
+
         Why we don't await each put:
         If a slow client's queue is full (256 items), we drop the event for
         that client rather than blocking all other clients. The dashboard will
         self-heal on the next periodic refresh anyway.
         """
+        if isinstance(event, str):
+            payload = dict(data or {})
+            payload["type"] = event
+            event = payload
+        else:
+            event = dict(event)
+
         event["timestamp"] = datetime.now(timezone.utc).isoformat()
         dead_clients = []
 

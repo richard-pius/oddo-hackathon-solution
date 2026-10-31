@@ -254,7 +254,8 @@ const { id } = Astro.params;
       pill.innerHTML = `<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getInvoiceClass(inv.status)}">${inv.status}</span>`;
 
       const pdfBtn = document.getElementById('btn-download-pdf') as HTMLAnchorElement;
-      pdfBtn.href = `${API_URL}/api/v1/billing/invoices/${inv.id}/pdf`;
+      const token = localStorage.getItem("brightloop_token") || "";
+      pdfBtn.href = `${API_URL}/api/v1/billing/invoices/${inv.id}/pdf?token=${encodeURIComponent(token)}`;
 
       // Paid stamp
       const stampPaid = document.getElementById('stamp-paid')!;

@@ -13,14 +13,17 @@ Why cookies AND JSON response:
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
-from sqlalchemy import select
+from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import User, UserRole, PasswordResetToken
+from app.models import (
+    User, UserRole, PasswordResetToken,
+    Subscription, SubscriptionLine, SubscriptionAudit, Invoice, InvoiceLine, Payment,
+)
 from app.schemas import (
     UserRegister, UserLogin, TokenResponse, UserOut,
-    ForgotPasswordRequest, ResetPasswordRequest, StaffCreate,
+    ForgotPasswordRequest, ResetPasswordRequest, StaffCreate, AdminUserPasswordChange,
 )
 from app.services.auth_service import (
     hash_password, verify_password, create_access_token,
@@ -224,3 +227,80 @@ async def list_users(
     """Admin-only: list all users for staff management."""
     result = await db.execute(select(User).order_by(User.created_at.desc()))
     return result.scalars().all()
+
+
+@router.delete("/users/{user_id}", status_code=status.HTTP_200_OK)
+async def delete_user_account(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    """
+    Admin-only: Delete another user account.
+    Prevents self-deletion to preserve administrative access.
+    Safely cascades any dependencies.
+    """
+    if user_id == admin.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Administrators cannot delete their own active account."
+        )
+
+    result = await db.execute(select(User).where(User.id == user_id))
+    target_user = result.scalar_one_or_none()
+    if not target_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User account not found")
+
+    # 1. Delete password reset tokens
+    await db.execute(delete(PasswordResetToken).where(PasswordResetToken.user_id == user_id))
+
+    # 2. Reassign staff references if target was staff/admin
+    await db.execute(
+        update(SubscriptionAudit).where(SubscriptionAudit.changed_by_id == user_id).values(changed_by_id=admin.id)
+    )
+    await db.execute(
+        update(Payment).where(Payment.recorded_by_id == user_id).values(recorded_by_id=admin.id)
+    )
+
+    # 3. Clean up customer subscriptions & invoices if deleting a customer
+    inv_res = await db.execute(select(Invoice.id).where(Invoice.customer_id == user_id))
+    inv_ids = inv_res.scalars().all()
+    if inv_ids:
+        await db.execute(delete(Payment).where(Payment.invoice_id.in_(inv_ids)))
+        await db.execute(delete(InvoiceLine).where(InvoiceLine.invoice_id.in_(inv_ids)))
+        await db.execute(delete(Invoice).where(Invoice.id.in_(inv_ids)))
+
+    sub_res = await db.execute(select(Subscription.id).where(Subscription.customer_id == user_id))
+    sub_ids = sub_res.scalars().all()
+    if sub_ids:
+        await db.execute(delete(SubscriptionAudit).where(SubscriptionAudit.subscription_id.in_(sub_ids)))
+        await db.execute(delete(SubscriptionLine).where(SubscriptionLine.subscription_id.in_(sub_ids)))
+        await db.execute(delete(Subscription).where(Subscription.id.in_(sub_ids)))
+
+    user_email = target_user.email
+    await db.delete(target_user)
+    await db.commit()
+
+    return {"detail": f"Account {user_email} has been permanently deleted."}
+
+
+@router.put("/users/{user_id}/password", status_code=status.HTTP_200_OK)
+async def admin_change_user_password(
+    user_id: int,
+    data: AdminUserPasswordChange,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    """
+    Admin-only: Change or reset any user account password.
+    Enforces strict enterprise password complexity requirements.
+    """
+    result = await db.execute(select(User).where(User.id == user_id))
+    target_user = result.scalar_one_or_none()
+    if not target_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User account not found")
+
+    target_user.hashed_password = hash_password(data.password)
+    await db.commit()
+
+    return {"detail": f"Password for {target_user.email} updated successfully."}

@@ -340,64 +340,15 @@ const {
           <span>New Quotation</span>
         </a>
 
-        <!-- Fast Role Switcher Dropdown (Odoo Style) -->
-        <div class="relative" id="role-menu-container">
-          <button
-            id="role-switch-btn"
-            class="flex items-center gap-2 px-2.5 py-1 rounded border border-slate-200 hover:bg-slate-50 text-xs text-slate-800 transition-colors cursor-pointer"
-          >
-            <div id="top-avatar" class="w-5 h-5 rounded bg-[#714B67] text-white flex items-center justify-center font-bold text-[9px]">
-              AM
-            </div>
-            <span id="top-user-name" class="font-medium hidden sm:inline text-xs">Alex Morgan</span>
-            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </button>
-
-          <!-- Dropdown -->
-          <div id="role-dropdown" class="hidden absolute right-0 mt-1 w-64 rounded bg-white border border-slate-200 shadow-md p-1.5 z-50 text-xs">
-            <div class="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
-              Active Persona
-            </div>
-            <div class="py-1 space-y-0.5">
-              <button class="role-switch-option flex items-center justify-between w-full p-2 rounded hover:bg-slate-50 text-left transition-colors cursor-pointer" data-email="admin@brightloop.io" data-pass="BrightloopAdmin2026!">
-                <div>
-                  <div class="font-semibold text-slate-800">Alex Morgan</div>
-                  <div class="text-[10px] text-slate-500 font-mono">admin@brightloop.io</div>
-                </div>
-                <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">Admin</span>
-              </button>
-              <button class="role-switch-option flex items-center justify-between w-full p-2 rounded hover:bg-slate-50 text-left transition-colors cursor-pointer" data-email="finance@brightloop.io" data-pass="BrightloopFinance2026!">
-                <div>
-                  <div class="font-semibold text-slate-800">Sarah Chen</div>
-                  <div class="text-[10px] text-slate-500 font-mono">finance@brightloop.io</div>
-                </div>
-                <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Finance</span>
-              </button>
-              <button class="role-switch-option flex items-center justify-between w-full p-2 rounded hover:bg-slate-50 text-left transition-colors cursor-pointer" data-email="customer@brightloop.io" data-pass="BrightloopCustomer2026!">
-                <div>
-                  <div class="font-semibold text-slate-800">Acmez Enterprise</div>
-                  <div class="text-[10px] text-slate-500 font-mono">customer@brightloop.io</div>
-                </div>
-                <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">Customer</span>
-              </button>
-            </div>
-            <div class="border-t border-slate-100 pt-1 mt-1">
-              <button
-                id="btn-dropdown-logout"
-                class="flex items-center gap-1.5 w-full p-2 rounded hover:bg-rose-50 text-rose-600 text-xs font-semibold text-left transition-colors cursor-pointer"
-              >
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                <span>Sign Out of All Sessions</span>
-              </button>
-            </div>
+        <!-- Current User Display (No dropdown, strictly current logged-in identity) -->
+        <div class="flex items-center gap-2 px-2.5 py-1 rounded bg-slate-50 border border-slate-200 text-xs text-slate-800" id="current-user-badge">
+          <div id="top-avatar" class="w-5 h-5 rounded bg-[#714B67] text-white flex items-center justify-center font-bold text-[9px] shrink-0">
+            BL
           </div>
+          <span id="top-user-name" class="font-semibold text-slate-800 text-xs">Loading...</span>
+          <span id="top-user-role-badge" class="px-1.5 py-0.2 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-700 font-mono"></span>
         </div>
-
-        <!-- ─── Explicit Top Bar Sign Out Button ────────────────────────────── -->
+<!-- ─── Explicit Top Bar Sign Out Button ────────────────────────────── -->
         <button
           id="btn-top-logout"
           class="inline-flex items-center gap-1.5 px-3 py-1 rounded border border-slate-300 bg-white hover:bg-rose-50 text-slate-700 hover:text-rose-700 hover:border-rose-300 text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
@@ -433,6 +384,7 @@ const {
           const topAvatar = document.getElementById('top-avatar');
           const sidebarAvatar = document.getElementById('sidebar-avatar');
           const topUserName = document.getElementById('top-user-name');
+          const topUserRole = document.getElementById('top-user-role-badge');
           const sidebarUserName = document.getElementById('sidebar-user-name');
           const sidebarUserRole = document.getElementById('sidebar-user-role');
           const navGroupConfig = document.getElementById('nav-group-config');
@@ -442,7 +394,17 @@ const {
 
           if (topAvatar) topAvatar.textContent = initials;
           if (sidebarAvatar) sidebarAvatar.textContent = initials;
-          if (topUserName) topUserName.textContent = user.full_name;
+                    if (topUserName) topUserName.textContent = user.full_name;
+          if (topUserRole) {
+            topUserRole.textContent = (user.role || '').toUpperCase();
+            if (user.role === 'admin') {
+              topUserRole.className = 'px-1.5 py-0.2 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono';
+            } else if (user.role === 'internal_staff' || user.role === 'finance') {
+              topUserRole.className = 'px-1.5 py-0.2 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono';
+            } else {
+              topUserRole.className = 'px-1.5 py-0.2 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200 font-mono';
+            }
+          }
           if (sidebarUserName) sidebarUserName.textContent = user.full_name;
           if (sidebarUserRole) sidebarUserRole.textContent = user.role;
 
@@ -465,58 +427,6 @@ const {
     }
 
     populateUserProfile();
-
-    // 2. Persona Switcher Toggle
-    const roleBtn = document.getElementById('role-switch-btn');
-    const roleDropdown = document.getElementById('role-dropdown');
-    if (roleBtn && roleDropdown) {
-      roleBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        roleDropdown.classList.toggle('hidden');
-      });
-      document.addEventListener('click', () => {
-        roleDropdown.classList.add('hidden');
-      });
-    }
-
-    // 3. Switch Persona Functionality
-    document.querySelectorAll('.role-switch-option').forEach((btn) => {
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        const email = btn.getAttribute('data-email');
-        const password = btn.getAttribute('data-pass');
-
-        try {
-          const apiBase = (window.PUBLIC_API_URL || localStorage.getItem('brightloop_api_url') || 'http://localhost:8000').replace(/\/$/, '');
-          const res = await fetch(`${apiBase}/api/v1/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-          });
-
-          if (res.ok) {
-            const data = await res.json();
-            document.cookie = `access_token=${data.access_token}; path=/; max-age=86400; SameSite=Lax`;
-            localStorage.setItem('brightloop_token', data.access_token);
-            localStorage.setItem('brightloop_user', JSON.stringify({
-              id: data.user_id,
-              email: email,
-              full_name: data.full_name,
-              role: (data.role || 'admin').toLowerCase(),
-              is_active: true,
-            }));
-
-            if (data.role.toLowerCase() === 'customer') {
-              window.location.replace('/portal');
-            } else {
-              window.location.replace('/');
-            }
-          }
-        } catch (err) {
-          console.error("Switch failed", err);
-        }
-      });
-    });
 
     // 4. Session Destruction & Logout Handler
     async function logout() {
@@ -549,11 +459,6 @@ const {
     const btnSidebarLogout = document.getElementById('btn-sidebar-logout');
     if (btnSidebarLogout) {
       btnSidebarLogout.addEventListener('click', logout);
-    }
-
-    const btnDropdownLogout = document.getElementById('btn-dropdown-logout');
-    if (btnDropdownLogout) {
-      btnDropdownLogout.addEventListener('click', logout);
     }
 
     // 5. Batch Billing Trigger

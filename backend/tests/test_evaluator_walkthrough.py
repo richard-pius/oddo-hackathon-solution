@@ -75,6 +75,48 @@ class TestEvaluatorWalkthrough(unittest.TestCase):
             )
         return sub_id
 
+    def _ensure_customer_open_invoice(self, cust_headers: dict) -> dict:
+        """Helper to ensure the logged-in customer has an open, payable invoice."""
+        inv_res = self.client.get("/api/v1/billing/invoices", headers=cust_headers)
+        if inv_res.status_code == 200:
+            invoices = inv_res.json().get("items", [])
+            for inv in invoices:
+                if (
+                    str(inv.get("status", "")).upper() in ["CONFIRMED", "DRAFT"]
+                    and Decimal(str(inv.get("amount_due", 0))) > 0
+                ):
+                    return inv
+
+        # If no open invoice exists for the customer, find or create an active subscription and prorate it
+        cust_subs_res = self.client.get("/api/v1/subscriptions?status_filter=ACTIVE", headers=cust_headers)
+        cust_sub = None
+        if cust_subs_res.status_code == 200:
+            items = cust_subs_res.json().get("items", [])
+            if items:
+                sub_detail = self.client.get(f"/api/v1/subscriptions/{items[0]['id']}", headers=cust_headers).json()
+                if sub_detail.get("lines"):
+                    cust_sub = sub_detail
+
+        if not cust_sub:
+            sub_id = self._create_sample_subscription()
+            for st in ["QUOTATION", "CONFIRMED", "ACTIVE"]:
+                self.client.post(
+                    f"/api/v1/subscriptions/{sub_id}/transition",
+                    json={"target_status": st, "notes": f"Auto-advancing to {st}"},
+                    headers=self.admin_headers
+                )
+            cust_sub = self.client.get(f"/api/v1/subscriptions/{sub_id}", headers=self.admin_headers).json()
+
+        target_line = cust_sub["lines"][0]
+        prorate_res = self.client.post(
+            f"/api/v1/subscriptions/{cust_sub['id']}/prorate",
+            json={"line_id": target_line["id"], "new_quantity": target_line["quantity"] + 1},
+            headers=self.admin_headers
+        )
+        invoice_id = prorate_res.json()["invoice_id"]
+        inv_detail = self.client.get(f"/api/v1/billing/invoices/{invoice_id}", headers=cust_headers)
+        return inv_detail.json()
+
     def _create_sample_subscription(self) -> int:
         """Helper to create a fresh sample subscription with dynamic relationships."""
         # Dynamic customer lookup
@@ -252,19 +294,14 @@ class TestEvaluatorWalkthrough(unittest.TestCase):
         cust_token = login_res.json()["access_token"]
         cust_headers = {"Authorization": f"Bearer {cust_token}"}
 
-        # Check customer invoices
-        inv_res = self.client.get("/api/v1/billing/invoices", headers=cust_headers)
-        self.assertEqual(inv_res.status_code, 200)
-        invoices_data = inv_res.json()
-        invoices = invoices_data.get("items", [])
-        self.assertTrue(len(invoices) > 0, "Customer should have at least one invoice")
-
-        open_inv = next((inv for inv in invoices if Decimal(str(inv["amount_due"])) > 0), None)
-        if not open_inv:
-            open_inv = invoices[0]
+        # Check customer invoices and ensure an open, payable invoice
+        open_inv = self._ensure_customer_open_invoice(cust_headers)
+        self.assertTrue(open_inv is not None, "Failed to resolve or generate an open customer invoice")
+        self.assertIn(str(open_inv["status"]).upper(), ["CONFIRMED", "DRAFT"])
+        pay_amount = float(open_inv["amount_due"])
+        self.assertTrue(pay_amount > 0, "Open invoice must have a positive amount due")
 
         # Record payment
-        pay_amount = float(open_inv["amount_due"]) if float(open_inv["amount_due"]) > 0 else 50.0
         pay_payload = {
             "invoice_id": open_inv["id"],
             "amount": pay_amount,

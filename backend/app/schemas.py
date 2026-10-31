@@ -86,6 +86,21 @@ class StaffCreate(BaseModel):
         return v
 
 
+class AdminUserPasswordChange(BaseModel):
+    """Admin updating another user's password."""
+    password: str = Field(..., min_length=9)
+
+    @field_validator("password")
+    @classmethod
+    def validate_password_strength(cls, v: str) -> str:
+        if not PASSWORD_REGEX.match(v):
+            raise ValueError(
+                "Password must be >8 chars and contain at least one uppercase, "
+                "one lowercase, and one special character (!@#$%^&*(),.?\":{}|<>_-+=)"
+            )
+        return v
+
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
