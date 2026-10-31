@@ -65,17 +65,22 @@ const {
           return;
         }
 
-        // 2. Strict Tenant Isolation for Customer Role
+        // 2. Strict Tenant Isolation for Customer Role and Staff Role
         const userRaw = localStorage.getItem('brightloop_user');
         if (userRaw) {
           try {
             const user = JSON.parse(userRaw);
             if (user && user.role === 'customer') {
-              const staffPages = ['/', '/subscriptions/new', '/catalog', '/rules'];
-              if (staffPages.includes(path) || path.startsWith('/catalog') || path.startsWith('/rules')) {
+              const staffPages = ['/', '/dashboard', '/subscriptions/new', '/catalog', '/rules', '/admin'];
+              if (staffPages.includes(path) || path.startsWith('/catalog') || path.startsWith('/rules') || path.startsWith('/admin')) {
                 document.documentElement.style.display = 'none';
                 window.location.replace('/portal');
+                return;
               }
+            } else if (user && user.role !== 'admin' && path.startsWith('/admin')) {
+              document.documentElement.style.display = 'none';
+              window.location.replace('/');
+              return;
             }
           } catch(e) {}
         }
@@ -202,6 +207,28 @@ const {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
             </svg>
             <span>Plans, Taxes & Rules</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Administration Group (Admin Only) -->
+      <div id="nav-group-admin">
+        <div class="px-2.5 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          Administration
+        </div>
+        <div class="space-y-0.5">
+          <a
+            href="/admin"
+            class={`flex items-center gap-2.5 px-2.5 py-2 rounded text-xs font-medium transition-colors ${
+              activeNav === 'admin'
+                ? 'bg-slate-100 text-[#714B67] font-semibold border-l-2 border-[#714B67]'
+                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+            }`}
+          >
+            <svg class="w-4 h-4 shrink-0 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <span>Staff & Access</span>
           </a>
         </div>
       </div>
@@ -409,6 +436,7 @@ const {
           const sidebarUserName = document.getElementById('sidebar-user-name');
           const sidebarUserRole = document.getElementById('sidebar-user-role');
           const navGroupConfig = document.getElementById('nav-group-config');
+          const navGroupAdmin = document.getElementById('nav-group-admin');
           const btnNewSub = document.getElementById('btn-new-subscription-top');
           const btnBatchBill = document.getElementById('btn-run-batch-billing');
 
@@ -418,9 +446,15 @@ const {
           if (sidebarUserName) sidebarUserName.textContent = user.full_name;
           if (sidebarUserRole) sidebarUserRole.textContent = user.role;
 
+          // Admin Tier check
+          if (user.role !== 'admin') {
+            if (navGroupAdmin) navGroupAdmin.style.display = 'none';
+          }
+
           // Tenant Isolation UI filtering for Customers
           if (user.role === 'customer') {
             if (navGroupConfig) navGroupConfig.style.display = 'none';
+            if (navGroupAdmin) navGroupAdmin.style.display = 'none';
             if (btnNewSub) btnNewSub.style.display = 'none';
             if (btnBatchBill) btnBatchBill.style.display = 'none';
           }
@@ -554,7 +588,7 @@ const {
     try {
       const token = localStorage.getItem('brightloop_token');
       const apiBase = (window.PUBLIC_API_URL || localStorage.getItem('brightloop_api_url') || 'http://localhost:8000').replace(/\/$/, '');
-      const sseUrl = `${apiBase}/api/v1/stream/events?token=${token || ''}`;
+      const sseUrl = `${apiBase}/api/v1/stream?token=${token || ''}`;
       const evtSource = new EventSource(sseUrl);
 
       evtSource.onmessage = function(event) {
