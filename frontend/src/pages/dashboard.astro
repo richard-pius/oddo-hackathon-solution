@@ -1,0 +1,10 @@
+---
+// /dashboard route alias - Protected by middleware, renders the executive dashboard
+import DashboardPage from './index.astro';
+---
+
+<script is:inline>
+  window.location.replace('/');
+</script>
+
+<DashboardPage />
