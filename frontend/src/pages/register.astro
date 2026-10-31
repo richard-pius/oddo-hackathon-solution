@@ -283,7 +283,8 @@ import '../styles/global.css';
       btnSpinner.classList.remove('hidden');
 
       try {
-        const res = await fetch('http://localhost:8000/api/v1/auth/register', {
+        const apiBase = (window.PUBLIC_API_URL || localStorage.getItem('brightloop_api_url') || 'http://localhost:8000').replace(/\/$/, '');
+        const res = await fetch(`${apiBase}/api/v1/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

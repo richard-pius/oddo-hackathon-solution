@@ -227,6 +227,7 @@ async def download_invoice_pdf(
 # ─── Manual Billing Trigger ──────────────────────────────────────────────────
 
 @router.post("/run-billing")
+@router.post("/batch-run")
 async def trigger_billing_run(
     billing_date: date | None = None,
     user: User = Depends(require_staff_or_admin),

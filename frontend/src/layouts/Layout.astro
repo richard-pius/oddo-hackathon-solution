@@ -453,7 +453,8 @@ const {
         const password = btn.getAttribute('data-pass');
 
         try {
-          const res = await fetch('http://localhost:8000/api/v1/auth/login', {
+          const apiBase = (window.PUBLIC_API_URL || localStorage.getItem('brightloop_api_url') || 'http://localhost:8000').replace(/\/$/, '');
+          const res = await fetch(`${apiBase}/api/v1/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password }),
@@ -486,7 +487,8 @@ const {
     // 4. Session Destruction & Logout Handler
     async function logout() {
       try {
-        await fetch('http://localhost:8000/api/v1/auth/logout', { 
+        const apiBase = (window.PUBLIC_API_URL || localStorage.getItem('brightloop_api_url') || 'http://localhost:8000').replace(/\/$/, '');
+        await fetch(`${apiBase}/api/v1/auth/logout`, { 
           method: 'POST',
           credentials: 'include'
         });
@@ -528,7 +530,8 @@ const {
         btnBatch.classList.add('opacity-50');
         try {
           const token = localStorage.getItem('brightloop_token');
-          const res = await fetch('http://localhost:8000/api/v1/billing/run-billing', {
+          const apiBase = (window.PUBLIC_API_URL || localStorage.getItem('brightloop_api_url') || 'http://localhost:8000').replace(/\/$/, '');
+          const res = await fetch(`${apiBase}/api/v1/billing/run-billing`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

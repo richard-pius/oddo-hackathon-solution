@@ -246,6 +246,7 @@ async def get_discount(
 
 # ─── Quotation Templates ────────────────────────────────────────────────────
 
+@router.get("/quotation-templates", response_model=list[QuotationTemplateOut])
 @router.get("/templates", response_model=list[QuotationTemplateOut])
 async def list_templates(
     db: AsyncSession = Depends(get_db),
@@ -259,6 +260,7 @@ async def list_templates(
     return result.scalars().all()
 
 
+@router.post("/quotation-templates", response_model=QuotationTemplateOut, status_code=status.HTTP_201_CREATED)
 @router.post("/templates", response_model=QuotationTemplateOut, status_code=status.HTTP_201_CREATED)
 async def create_template(
     data: QuotationTemplateCreate,
